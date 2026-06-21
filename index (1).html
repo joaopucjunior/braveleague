@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brave League">
+<title>Brave League</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --laranja:#E55A1C; --laranja-esc:#C44A0E; --laranja-clr:#FDE8DF;
+  --preto:#111; --cinza-esc:#1E1E1E; --cinza-med:#2D2D2D;
+  --cinza:#3D3D3D; --cinza-brd:#444; --branco:#FFF;
+  --verde:#22A45D; --verde-clr:#D4EDDA;
+  --vermelho:#E53935; --vermelho-clr:#FDECEA;
+  --roxo:#7C3AED; --roxo-clr:#EDE9FE;
+  --amarelo:#F59E0B; --amarelo-clr:#FFF8E1;
+}
+html,body{height:100%;background:var(--preto);color:var(--branco);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;overflow:hidden;}
+
+/* HEADER */
+.header{background:var(--cinza-esc);border-bottom:2px solid var(--laranja);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-logo{width:32px;height:32px;background:var(--laranja);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;}
+.header-title{font-size:15px;font-weight:700;line-height:1.1;}
+.header-sub{font-size:11px;color:#888;margin-top:1px;}
+.header-right{display:flex;gap:8px;}
+.btn-sm{background:var(--cinza-med);color:#ccc;border:1px solid var(--cinza-brd);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-laranja{background:var(--laranja);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--cinza-esc);border-top:1px solid var(--cinza-brd);display:flex;z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;background:none;border:none;color:#666;font-size:10px;font-weight:500;cursor:pointer;position:relative;}
+.nav-btn.active{color:var(--laranja);}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--vermelho);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+
+/* PAGES */
+.page{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:74px;padding-bottom:70px;display:none;}
+.page.active{display:block;}
+
+/* LAYOUT */
+.section{padding:12px 16px 0;}
+.section-label{font-size:11px;font-weight:700;color:var(--laranja);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;}
+.card{background:var(--cinza-esc);border-radius:12px;border:1px solid var(--cinza-brd);overflow:hidden;margin-bottom:10px;}
+.card-header{background:var(--cinza-med);padding:10px 14px;font-size:12px;font-weight:700;color:var(--laranja);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:8px;}
+.card-header svg{width:14px;height:14px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;}
+.spacer{height:12px;}
+
+/* PRESTADORES */
+.prestador-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--cinza-brd);}
+.prestador-item:last-child{border-bottom:none;}
+.prestador-label{font-size:13px;color:var(--branco);flex:1;min-width:0;}
+.prestador-label span{display:block;font-size:10px;color:#666;margin-top:1px;}
+.prestador-input{background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:14px;font-weight:600;padding:6px 8px;width:82px;text-align:center;font-family:'SF Mono',monospace;flex-shrink:0;}
+.prestador-input:focus{outline:none;border-color:var(--laranja);}
+.btn-now-sm{background:var(--laranja);border:none;border-radius:7px;color:#fff;font-size:10px;font-weight:700;padding:6px 8px;cursor:pointer;flex-shrink:0;}
+.pst-dot{width:8px;height:8px;border-radius:50%;background:var(--cinza-brd);flex-shrink:0;}
+.pst-dot.chegou{background:var(--verde);}
+
+/* HORÁRIOS */
+.tempo-grid{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tempo-item{display:flex;flex-direction:column;gap:4px;}
+.tempo-label{font-size:10px;color:#888;font-weight:500;}
+.tempo-row{display:flex;gap:6px;align-items:center;}
+.tempo-input{flex:1;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:15px;font-weight:600;padding:8px 10px;text-align:center;-webkit-appearance:none;font-family:'SF Mono',monospace;}
+.tempo-input:focus{outline:none;border-color:var(--laranja);}
+.btn-now{background:var(--laranja);border:none;border-radius:8px;color:#fff;font-size:10px;font-weight:700;padding:8px;cursor:pointer;flex-shrink:0;}
+
+/* CHECKLIST */
+.checklist{padding:4px 0;}
+.check-item{padding:10px 14px;border-bottom:1px solid var(--cinza-brd);}
+.check-item:last-child{border-bottom:none;}
+.check-main{display:flex;align-items:flex-start;gap:10px;}
+.check-text{font-size:13px;color:var(--branco);line-height:1.4;flex:1;}
+.check-item.status-ok .check-text{color:#555;text-decoration:line-through;}
+.check-item.status-fail .check-text{color:#c77;}
+.check-btns{display:flex;gap:6px;flex-shrink:0;margin-top:1px;}
+.cbtn{width:28px;height:28px;border-radius:7px;border:2px solid var(--cinza-brd);background:transparent;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;}
+.check-item.status-ok .cbtn-ok{background:var(--verde);border-color:var(--verde);}
+.check-item.status-fail .cbtn-fail{background:var(--vermelho);border-color:var(--vermelho);}
+.check-obs-row{display:none;margin-top:7px;}
+.check-item.status-fail .check-obs-row{display:flex;}
+.check-obs-input{flex:1;background:var(--cinza-med);border:1px solid var(--vermelho);border-radius:8px;color:var(--branco);font-size:12px;padding:7px 10px;font-family:inherit;resize:none;line-height:1.4;width:100%;}
+.btn-edit-sec{background:none;border:1px solid var(--cinza-brd);border-radius:7px;color:#888;font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.btn-edit-sec svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+
+/* PLACAR */
+.placar-jogo{padding:12px 14px;}
+.placar-nome{font-size:11px;color:#888;font-weight:600;margin-bottom:10px;}
+.placar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.placar-time{flex:1;text-align:center;font-size:12px;font-weight:700;}
+.placar-score{display:flex;align-items:center;gap:8px;}
+.score-btn{width:36px;height:36px;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:10px;color:var(--branco);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.score-val{font-size:32px;font-weight:900;min-width:36px;text-align:center;}
+.score-sep{font-size:24px;font-weight:300;color:#555;}
+.gols-section{margin-top:4px;}
+.gols-label{font-size:10px;color:#888;font-weight:600;margin-bottom:6px;}
+.gols-list{display:flex;flex-direction:column;gap:4px;}
+.gol-item{display:flex;align-items:center;gap:8px;background:var(--cinza-med);border-radius:8px;padding:7px 10px;}
+.gol-dot{width:8px;height:8px;background:var(--laranja);border-radius:50%;flex-shrink:0;}
+.gol-txt{font-size:12px;flex:1;}
+.gol-del{color:#555;font-size:16px;cursor:pointer;padding:0 4px;}
+.btn-add-gol{width:100%;background:var(--cinza-med);border:1px dashed var(--cinza-brd);border-radius:8px;color:#888;font-size:12px;padding:8px;cursor:pointer;margin-top:6px;}
+.score-add-row{display:flex;justify-content:center;gap:10px;margin-bottom:4px;}
+.score-add-btn{background:var(--laranja);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;padding:8px 14px;cursor:pointer;}
+
+/* OCORRÊNCIAS */
+.form-oco{margin:12px 16px;background:var(--cinza-esc);border-radius:12px;border:1px solid var(--cinza-brd);padding:14px;}
+.form-row{display:flex;gap:6px;margin-bottom:8px;}
+.tipo-btn{flex:1;padding:7px 4px;border-radius:8px;border:1px solid var(--cinza-brd);background:var(--cinza-med);color:#888;font-size:11px;font-weight:600;cursor:pointer;line-height:1.3;}
+.tipo-btn.sel-problema{background:var(--vermelho-clr);border-color:var(--vermelho);color:var(--vermelho);}
+.tipo-btn.sel-fisio{background:var(--roxo-clr);border-color:var(--roxo);color:var(--roxo);}
+.tipo-btn.sel-nota{background:var(--cinza);border-color:#666;color:var(--branco);}
+textarea.oco-input{width:100%;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:14px;padding:10px 12px;resize:none;font-family:inherit;line-height:1.5;min-height:72px;}
+textarea.oco-input:focus{outline:none;border-color:var(--laranja);}
+.btn-salvar-oco{width:100%;background:var(--laranja);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;padding:11px;cursor:pointer;margin-top:8px;}
+
+/* Form fisio */
+.fisio-form{display:none;flex-direction:column;gap:8px;margin-bottom:8px;}
+.fisio-form.show{display:flex;}
+.fisio-form input,.fisio-form textarea{background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:13px;padding:9px 12px;font-family:inherit;width:100%;}
+.fisio-form input:focus,.fisio-form textarea:focus{outline:none;border-color:var(--roxo);}
+.fisio-label{font-size:11px;color:#888;margin-bottom:2px;}
+
+.oco-item{padding:11px 14px;border-bottom:1px solid var(--cinza-brd);display:flex;gap:10px;align-items:flex-start;}
+.oco-item:last-child{border-bottom:none;}
+.oco-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.oco-body{flex:1;}
+.oco-header{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.oco-tipo{font-size:10px;font-weight:700;text-transform:uppercase;}
+.oco-hora{font-size:10px;color:#666;margin-left:auto;}
+.oco-texto{font-size:13px;color:#ccc;line-height:1.4;}
+.oco-del{color:#444;font-size:18px;cursor:pointer;flex-shrink:0;}
+.dot-problema{background:var(--vermelho);}
+.dot-fisio{background:var(--roxo);}
+.dot-nota{background:#888;}
+.txt-problema{color:var(--vermelho);}
+.txt-fisio{color:var(--roxo);}
+.txt-nota{color:#aaa;}
+
+/* EXPORTAR */
+.export-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 0;}
+.export-btn{border:none;border-radius:12px;padding:14px 10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.export-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;}
+.export-btn-pdf{background:var(--laranja);color:#fff;}
+.export-btn-txt{background:var(--cinza-med);color:#ccc;border:1px solid var(--cinza-brd);}
+.export-preview{margin:12px 16px;background:var(--cinza-esc);border-radius:12px;border:1px solid var(--cinza-brd);padding:14px;font-size:11px;font-family:'SF Mono','Menlo',monospace;color:#aaa;line-height:1.7;white-space:pre-wrap;max-height:280px;overflow-y:auto;word-break:break-word;}
+
+/* EVENTOS SALVOS */
+.eventos-list{padding:0 16px;}
+.evento-card{background:var(--cinza-esc);border:1px solid var(--cinza-brd);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.evento-card:active{opacity:.8;}
+.evento-card-info{flex:1;}
+.evento-card-nome{font-size:14px;font-weight:700;}
+.evento-card-data{font-size:11px;color:#888;margin-top:2px;}
+.evento-card-del{color:#555;font-size:20px;cursor:pointer;padding:4px;}
+.btn-novo-evento{width:100%;background:var(--laranja);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;padding:14px;cursor:pointer;margin-bottom:10px;}
+
+/* MODAIS */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--cinza-esc);border-top-left-radius:20px;border-top-right-radius:20px;border-top:2px solid var(--laranja);width:100%;padding:20px 20px 30px;max-height:88vh;overflow-y:auto;}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal label,.form-label{font-size:12px;color:#888;display:block;margin-bottom:4px;margin-top:12px;}
+.modal input,.modal select,.modal textarea,.form-input{width:100%;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:15px;padding:10px 12px;-webkit-appearance:none;font-family:inherit;}
+.modal input:focus,.form-input:focus{outline:none;border-color:var(--laranja);}
+.modal-btns{display:flex;gap:10px;margin-top:18px;}
+.btn-cancel{flex:1;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:10px;color:#aaa;font-size:14px;font-weight:600;padding:12px;cursor:pointer;}
+.btn-confirm{flex:2;background:var(--laranja);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:12px;cursor:pointer;}
+.m-tab{flex:1;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:#888;font-size:12px;font-weight:600;padding:7px 4px;cursor:pointer;font-family:inherit;}
+.m-tab.active{background:var(--laranja);border-color:var(--laranja);color:#fff;}
+.sec-divider{font-size:11px;font-weight:700;color:var(--laranja);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px;}
+.gol-form-input{width:100%;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:15px;padding:10px 12px;-webkit-appearance:none;}
+.gol-form-input:focus{outline:none;border-color:var(--laranja);}
+.gol-form-label{font-size:12px;color:#888;margin-bottom:4px;display:block;margin-top:12px;}
+.time-selector{display:flex;gap:8px;margin-top:4px;}
+.time-sel-btn{flex:1;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:#888;font-size:13px;font-weight:600;padding:9px;cursor:pointer;text-align:center;}
+.time-sel-btn.sel{border-color:var(--laranja);color:var(--laranja);background:var(--laranja-clr);}
+.edit-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.edit-row input{flex:1;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:var(--branco);font-size:14px;padding:9px 12px;}
+.edit-row input:focus{outline:none;border-color:var(--laranja);}
+.btn-del-item{background:var(--vermelho);border:none;border-radius:8px;color:#fff;font-size:18px;width:34px;height:34px;cursor:pointer;flex-shrink:0;}
+.btn-add-wide{width:100%;background:var(--cinza-med);border:1px dashed var(--cinza-brd);border-radius:8px;color:#888;font-size:12px;padding:9px;cursor:pointer;margin-bottom:12px;}
+.save-indicator{position:fixed;bottom:80px;right:16px;background:var(--verde);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;z-index:150;opacity:0;transition:opacity .3s;}
+.save-indicator.show{opacity:1;}
+
+/* PDF PRINT */
+@media print {
+  body{overflow:auto;background:#fff;color:#000;}
+  .header,.nav,.modal-bg,.save-indicator{display:none!important;}
+  .page{display:block!important;position:static;padding:0;overflow:visible;}
+  #page-export,.export-preview{display:none!important;}
+  #pdf-content{display:block!important;}
+}
+#pdf-content{display:none;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">BL</div>
+    <div>
+      <div class="header-title" id="evento-nome">Brave League</div>
+      <div class="header-sub" id="evento-data">Configure o evento</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-sm" onclick="irParaEventos()">📋 Eventos</button>
+    <button class="btn-laranja" onclick="abrirModal()">Evento</button>
+  </div>
+</div>
+
+<!-- 1. HORÁRIOS -->
+<div class="page active" id="page-horarios">
+  <div class="section">
+    <div class="section-label">Chegada dos Prestadores</div>
+    <div class="card">
+      <div class="card-header"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Equipe</div>
+      <div id="grid-prestadores"></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">1° Jogo</div>
+    <div class="card">
+      <div class="card-header"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="nome-jogo1">Jogo 1</span></div>
+      <div class="tempo-grid" id="grid-jogo1"></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">2° Jogo</div>
+    <div class="card">
+      <div class="card-header"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="nome-jogo2">Jogo 2</span></div>
+      <div class="tempo-grid" id="grid-jogo2"></div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- 2. CHECKLIST -->
+<div class="page" id="page-checklist">
+  <div class="section">
+    <div class="section-header"><div class="section-label" style="margin:0">Futebol / Escritório / Mesário</div><button class="btn-edit-sec" onclick="abrirEditCheck('fut')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></div>
+    <div class="card"><div class="checklist" id="check-fut"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><div class="section-label" style="margin:0">Atletas e Treinadores</div><button class="btn-edit-sec" onclick="abrirEditCheck('atl')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></div>
+    <div class="card"><div class="checklist" id="check-atl"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><div class="section-label" style="margin:0">Marketing</div><button class="btn-edit-sec" onclick="abrirEditCheck('mkt')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></div>
+    <div class="card"><div class="checklist" id="check-mkt"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><div class="section-label" style="margin:0">Observações Gerais</div><button class="btn-edit-sec" onclick="abrirEditCheck('obs')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></div>
+    <div class="card"><div class="checklist" id="check-obs"></div></div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- 3. PLACAR -->
+<div class="page" id="page-placar">
+  <div class="section">
+    <div class="section-label">1° Jogo</div>
+    <div class="card"><div class="placar-jogo">
+      <div class="placar-nome" id="placar-nome1">Jogo 1</div>
+      <div class="placar-row">
+        <div class="placar-time" id="pt-1a">Time A</div>
+        <div class="placar-score">
+          <div class="score-btn" onclick="alterarPlacar(1,'a',-1)">−</div>
+          <div class="score-val" id="sc1a">0</div>
+          <div class="score-sep">×</div>
+          <div class="score-val" id="sc1b">0</div>
+          <div class="score-btn" onclick="alterarPlacar(1,'b',-1)">−</div>
+        </div>
+        <div class="placar-time" id="pt-1b">Time B</div>
+      </div>
+      <div class="score-add-row">
+        <div class="score-add-btn" onclick="alterarPlacar(1,'a',1)">+ Gol Time A</div>
+        <div class="score-add-btn" onclick="alterarPlacar(1,'b',1)">+ Gol Time B</div>
+      </div>
+      <div class="gols-section">
+        <div class="gols-label">Gols e assistências</div>
+        <div class="gols-list" id="gols1"></div>
+        <button class="btn-add-gol" onclick="abrirModalGol(1)">+ Registrar gol com detalhes</button>
+      </div>
+    </div></div>
+  </div>
+  <div class="section">
+    <div class="section-label">2° Jogo</div>
+    <div class="card"><div class="placar-jogo">
+      <div class="placar-nome" id="placar-nome2">Jogo 2</div>
+      <div class="placar-row">
+        <div class="placar-time" id="pt-2a">Time A</div>
+        <div class="placar-score">
+          <div class="score-btn" onclick="alterarPlacar(2,'a',-1)">−</div>
+          <div class="score-val" id="sc2a">0</div>
+          <div class="score-sep">×</div>
+          <div class="score-val" id="sc2b">0</div>
+          <div class="score-btn" onclick="alterarPlacar(2,'b',-1)">−</div>
+        </div>
+        <div class="placar-time" id="pt-2b">Time B</div>
+      </div>
+      <div class="score-add-row">
+        <div class="score-add-btn" onclick="alterarPlacar(2,'a',1)">+ Gol Time A</div>
+        <div class="score-add-btn" onclick="alterarPlacar(2,'b',1)">+ Gol Time B</div>
+      </div>
+      <div class="gols-section">
+        <div class="gols-label">Gols e assistências</div>
+        <div class="gols-list" id="gols2"></div>
+        <button class="btn-add-gol" onclick="abrirModalGol(2)">+ Registrar gol com detalhes</button>
+      </div>
+    </div></div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- 4. OCORRÊNCIAS -->
+<div class="page" id="page-oco">
+  <div class="form-oco">
+    <div class="form-row">
+      <button class="tipo-btn sel-problema" id="tbtn-problema" onclick="selTipo('problema')">⚠️ Problema</button>
+      <button class="tipo-btn" id="tbtn-fisio" onclick="selTipo('fisio')">🏥 Fisio</button>
+      <button class="tipo-btn" id="tbtn-nota" onclick="selTipo('nota')">📝 Nota</button>
+    </div>
+    <!-- Form fisioterapia -->
+    <div class="fisio-form" id="fisio-form">
+      <div>
+        <div class="fisio-label">Atleta atendido</div>
+        <input class="form-input" type="text" id="fisio-atleta" placeholder="Nome do atleta">
+      </div>
+      <div>
+        <div class="fisio-label">O que aconteceu / relato do atleta</div>
+        <textarea class="form-input" id="fisio-relato" rows="2" placeholder="Descreva a queixa..."></textarea>
+      </div>
+      <div>
+        <div class="fisio-label">Atendimento realizado</div>
+        <textarea class="form-input" id="fisio-atendimento" rows="2" placeholder="Conduta do fisioterapeuta..."></textarea>
+      </div>
+    </div>
+    <!-- Campo genérico -->
+    <textarea class="oco-input" id="oco-texto" placeholder="Descreva a ocorrência..."></textarea>
+    <button class="btn-salvar-oco" onclick="salvarOco()">Registrar</button>
+  </div>
+  <div class="card" style="margin:0 16px 12px;">
+    <div id="oco-list"><div style="padding:20px;text-align:center;color:#555;font-size:13px;">Nenhuma ocorrência registrada</div></div>
+  </div>
+</div>
+
+<!-- 5. EXPORTAR -->
+<div class="page" id="page-export">
+  <div class="section"><div class="section-label">Exportar relatório</div></div>
+  <div class="export-btns">
+    <button class="export-btn export-btn-pdf" onclick="mostrarRelatorio()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Ver Relatório
+    </button>
+    <button class="export-btn export-btn-txt" onclick="copiarTexto()">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copiar texto
+    </button>
+  </div>
+
+  <!-- TRANSFERÊNCIA DE DADOS -->
+  <div style="margin:12px 16px 0;">
+    <div style="font-size:11px;font-weight:700;color:var(--laranja);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Transferir evento entre dispositivos</div>
+    <div class="card" style="padding:14px;">
+      <div style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5;">Use esses botões para levar os dados deste evento para o arquivo <strong style="color:#ccc;">.html</strong> aberto no seu navegador.</div>
+      <button onclick="exportarDados()" style="width:100%;background:var(--verde);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:13px;cursor:pointer;margin-bottom:8px;">
+        📤 Exportar dados — copiar código
+      </button>
+      <button onclick="abrirImportar()" style="width:100%;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:10px;color:#ccc;font-size:14px;font-weight:700;padding:13px;cursor:pointer;">
+        📥 Importar dados — colar código
+      </button>
+    </div>
+  </div>
+
+  <div id="export-preview" style="display:none"></div>
+  <div class="spacer"></div>
+</div>
+
+<!-- 6. EVENTOS SALVOS -->
+<div class="page" id="page-eventos">
+  <div class="section" style="padding-bottom:12px;">
+    <button class="btn-novo-evento" onclick="novoEvento()">+ Novo evento</button>
+    <div class="eventos-list" id="eventos-list" style="padding:0;"></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="irPara('horarios',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Horários
+  </button>
+  <button class="nav-btn" onclick="irPara('checklist',this)">
+    <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Checklist
+    <span class="badge" id="badge-check" style="display:none">0</span>
+  </button>
+  <button class="nav-btn" onclick="irPara('placar',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Placar
+  </button>
+  <button class="nav-btn" onclick="irPara('oco',this)">
+    <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Ocorr.
+    <span class="badge" id="badge-oco" style="display:none">0</span>
+  </button>
+  <button class="nav-btn" onclick="irPara('export',this);gerarTexto()">
+    <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Exportar
+  </button>
+</nav>
+
+<div class="save-indicator" id="save-indicator">💾 Salvo</div>
+
+<!-- MODAL EVENTO -->
+<div class="modal-bg" id="modal-evento">
+  <div class="modal">
+    <h2>Configurar Evento</h2>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button class="m-tab active" id="mtab-geral" onclick="mTab('geral')">Geral</button>
+      <button class="m-tab" id="mtab-equipe" onclick="mTab('equipe')">Equipes</button>
+      <button class="m-tab" id="mtab-equipe2" onclick="mTab('equipe2')">Equipe Op.</button>
+    </div>
+    <div id="msec-geral">
+      <label>Nome do evento</label><input type="text" id="m-nome" placeholder="Ex: Brave League – Rodada 5">
+      <label>Data</label><input type="date" id="m-data">
+    </div>
+    <div id="msec-equipe" style="display:none">
+      <div class="sec-divider">Jogo 1</div>
+      <label>Time A</label><input type="text" id="m-j1a" placeholder="Ex: Tigers">
+      <label>Treinador Time A</label><input type="text" id="m-n-treinador_j1a" placeholder="Nome">
+      <label>Time B</label><input type="text" id="m-j1b" placeholder="Ex: Lions">
+      <label>Treinador Time B</label><input type="text" id="m-n-treinador_j1b" placeholder="Nome">
+      <div class="sec-divider">Jogo 2</div>
+      <label>Time A</label><input type="text" id="m-j2a" placeholder="Ex: Tigers JV">
+      <label>Treinador Time A</label><input type="text" id="m-n-treinador_j2a" placeholder="Nome">
+      <label>Time B</label><input type="text" id="m-j2b" placeholder="Ex: Jaguars JV">
+      <label>Treinador Time B</label><input type="text" id="m-n-treinador_j2b" placeholder="Nome">
+    </div>
+    <div id="msec-equipe2" style="display:none">
+      <label>Futebol</label><input type="text" id="m-n-futebol" placeholder="Nome">
+      <label>Mesário</label><input type="text" id="m-n-mesario" placeholder="Nome">
+      <label>Escritório</label><input type="text" id="m-n-escritorio" placeholder="Nome">
+      <label>Arbitragem</label><input type="text" id="m-n-arbitragem" placeholder="Nome">
+      <label>Marketing</label><input type="text" id="m-n-marketing" placeholder="Nome">
+      <label>Filmmaker</label><input type="text" id="m-n-filmmaker" placeholder="Nome">
+      <label>Fisioterapeuta</label><input type="text" id="m-n-fisio" placeholder="Nome">
+      <label>Fotógrafo</label><input type="text" id="m-n-fotografo" placeholder="Nome">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="salvarEvento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CHECKLIST -->
+<div class="modal-bg" id="modal-check-edit">
+  <div class="modal">
+    <h2 id="modal-check-titulo">Editar itens</h2>
+    <div id="check-edit-lista"></div>
+    <button class="btn-add-wide" onclick="adicionarItemEdit()">+ Adicionar item</button>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="fecharEditCheck()">Cancelar</button>
+      <button class="btn-confirm" onclick="salvarEditCheck()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GOL -->
+<div class="modal-bg" id="modal-gol">
+  <div class="modal">
+    <h2>Registrar Gol</h2>
+    <span class="gol-form-label">Time que marcou</span>
+    <div class="time-selector" id="time-selector"></div>
+    <span class="gol-form-label">Autor do gol</span>
+    <input class="gol-form-input" id="gol-autor" type="text" placeholder="Nome do jogador">
+    <span class="gol-form-label">Assistência (opcional)</span>
+    <input class="gol-form-input" id="gol-assist" type="text" placeholder="Nome do assistente">
+    <span class="gol-form-label">Minuto (opcional)</span>
+    <input class="gol-form-input" id="gol-min" type="number" placeholder="Ex: 23" min="0" max="90">
+    <div class="modal-btns" style="margin-top:16px;">
+      <button class="btn-cancel" onclick="fecharModalGol()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmarGol()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF CONTENT (hidden, printed) -->
+<div id="pdf-content"></div>
+
+<script>
+// ── CONSTANTES ──
+const CAMPOS=[{key:'entrada',label:'Chegada'},{key:'sorteio',label:'Sorteio/Fotos'},{key:'inicio',label:'Início'},{key:'intervalo',label:'Intervalo'},{key:'segundo',label:'2° Tempo'},{key:'fim',label:'Fim'}];
+
+const PRESTADORES=[
+  {key:'futebol',label:'Futebol',sub:''},
+  {key:'mesario',label:'Mesário',sub:''},
+  {key:'escritorio',label:'Escritório',sub:''},
+  {key:'arbitragem',label:'Arbitragem',sub:''},
+  {key:'treinador_j1a',label:'Treinador',sub:'Jogo 1 — Time A'},
+  {key:'treinador_j1b',label:'Treinador',sub:'Jogo 1 — Time B'},
+  {key:'treinador_j2a',label:'Treinador',sub:'Jogo 2 — Time A'},
+  {key:'treinador_j2b',label:'Treinador',sub:'Jogo 2 — Time B'},
+  {key:'marketing',label:'Marketing',sub:''},
+  {key:'filmmaker',label:'Filmmaker',sub:''},
+  {key:'fisio',label:'Fisioterapeuta',sub:''},
+  {key:'fotografo',label:'Fotógrafo',sub:''}
+];
+
+const CHECKLIST_ITEMS_DEFAULT={
+  fut:[{id:'f1',texto:'Chegada 1:30h antes do 1° jogo'},{id:'f2',texto:'Retirar materiais do armário'},{id:'f3',texto:'Limpar garrafas, encher galão, pendurar banner, ligar som'},{id:'f4',texto:'Responsável por buscar bolas durante os jogos'},{id:'f5',texto:'Cobrar horário dos times'},{id:'f6',texto:'Informar tempo, pausas e substituições'}],
+  atl:[{id:'a1',texto:'Chegada 1:00h antes do jogo'},{id:'a2',texto:'Buscar uniforme e assinar súmula'},{id:'a3',texto:'Comportamento com arbitragem e prestadores'},{id:'a4',texto:'Comportamento com os atletas'},{id:'a5',texto:'Treinadores controlam chegada dos atletas'},{id:'a6',texto:'Anotar gol e assistência → Futebol/Mesário'}],
+  mkt:[{id:'m1',texto:'Chegada 0:30h antes do 1° jogo'},{id:'m2',texto:'Alinhamento interno'}],
+  obs:[{id:'o1',texto:'Comprar gelo 30min antes (20kg)'},{id:'o2',texto:'Comprar lanche para funcionários'},{id:'o3',texto:'Se times atrasarem: entrada direto para o campo'},{id:'o4',texto:'Atleta convidado: deve ir à mesa antes de jogar'}]
+};
+
+const SECOES_LABEL={fut:'Futebol / Escritório / Mesário',atl:'Atletas e Treinadores',mkt:'Marketing',obs:'Observações Gerais'};
+const NOMES_KEYS=['treinador_j1a','treinador_j1b','treinador_j2a','treinador_j2b','futebol','mesario','escritorio','arbitragem','marketing','filmmaker','fisio','fotografo'];
+
+// ── ESTADO ATUAL ──
+let EVENTO_ID = null;
+let CHECKLIST_ITEMS = JSON.parse(JSON.stringify(CHECKLIST_ITEMS_DEFAULT));
+let _editSec='', _golTimeIdx=0, _exportTxt='';
+
+function novoEstado() {
+  return {
+    evento:{nome:'Brave League',data:'',j1a:'Tigers',j1b:'Lions',j2a:'Tigers JV',j2b:'Jaguars JV'},
+    horarios:{j1:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''},j2:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''}},
+    prestadores:{futebol:'',mesario:'',escritorio:'',arbitragem:'',treinador_j1a:'',treinador_j1b:'',treinador_j2a:'',treinador_j2b:'',marketing:'',filmmaker:'',fisio:'',fotografo:''},
+    nomes:{futebol:'',mesario:'',escritorio:'',arbitragem:'',treinador_j1a:'',treinador_j1b:'',treinador_j2a:'',treinador_j2b:'',marketing:'',filmmaker:'',fisio:'',fotografo:''},
+    placar:{j1a:0,j1b:0,j2a:0,j2b:0},
+    gols:{j1:[],j2:[]},
+    checklist:{},checkObs:{},
+    ocorrencias:[],
+    checklistItems:JSON.parse(JSON.stringify(CHECKLIST_ITEMS_DEFAULT))
+  };
+}
+
+let S = novoEstado();
+
+// ── PERSISTÊNCIA ──
+function salvarAuto() {
+  if(!EVENTO_ID) EVENTO_ID = 'ev_'+Date.now();
+  S.checklistItems = CHECKLIST_ITEMS;
+  localStorage.setItem('bl_evento_'+EVENTO_ID, JSON.stringify(S));
+  // Atualizar índice
+  let idx = JSON.parse(localStorage.getItem('bl_index')||'[]');
+  if(!idx.find(e=>e.id===EVENTO_ID)) {
+    idx.push({id:EVENTO_ID, nome:S.evento.nome, data:S.evento.data});
+    localStorage.setItem('bl_index', JSON.stringify(idx));
+  } else {
+    idx = idx.map(e=>e.id===EVENTO_ID?{...e,nome:S.evento.nome,data:S.evento.data}:e);
+    localStorage.setItem('bl_index', JSON.stringify(idx));
+  }
+  mostrarSalvo();
+}
+
+function mostrarSalvo() {
+  const el=document.getElementById('save-indicator');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1500);
+}
+
+function carregarEvento(id) {
+  const raw=localStorage.getItem('bl_evento_'+id);
+  if(!raw) return;
+  EVENTO_ID=id;
+  S=JSON.parse(raw);
+  CHECKLIST_ITEMS=S.checklistItems||JSON.parse(JSON.stringify(CHECKLIST_ITEMS_DEFAULT));
+  renderTudo();
+  irPara('horarios', document.querySelector('.nav-btn'));
+}
+
+function novoEvento() {
+  EVENTO_ID=null;
+  S=novoEstado();
+  CHECKLIST_ITEMS=JSON.parse(JSON.stringify(CHECKLIST_ITEMS_DEFAULT));
+  renderTudo();
+  irPara('horarios', document.querySelector('.nav-btn'));
+}
+
+function deletarEvento(id, e) {
+  e.stopPropagation();
+  if(!confirm('Excluir este evento?')) return;
+  localStorage.removeItem('bl_evento_'+id);
+  let idx=JSON.parse(localStorage.getItem('bl_index')||'[]');
+  idx=idx.filter(ev=>ev.id!==id);
+  localStorage.setItem('bl_index', JSON.stringify(idx));
+  renderEventosList();
+}
+
+function renderEventosList() {
+  const list=document.getElementById('eventos-list');
+  const idx=JSON.parse(localStorage.getItem('bl_index')||'[]');
+  if(!idx.length){list.innerHTML='<div style="padding:20px;text-align:center;color:#555;font-size:13px;">Nenhum evento salvo ainda</div>';return;}
+  list.innerHTML=idx.slice().reverse().map(ev=>{
+    const data=ev.data?new Date(ev.data+'T12:00:00').toLocaleDateString('pt-BR'):'Sem data';
+    const atual=ev.id===EVENTO_ID?'border-color:var(--laranja);':'';
+    return `<div class="evento-card" style="${atual}" onclick="carregarEvento('${ev.id}')">
+      <div style="font-size:20px;">📋</div>
+      <div class="evento-card-info">
+        <div class="evento-card-nome">${ev.nome}</div>
+        <div class="evento-card-data">${data}</div>
+      </div>
+      <div class="evento-card-del" onclick="deletarEvento('${ev.id}',event)">🗑</div>
+    </div>`;
+  }).join('');
+}
+
+function irParaEventos() {
+  renderEventosList();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-eventos').classList.add('active');
+}
+
+// ── RENDER TUDO ──
+function renderTudo() {
+  atualizarHeader();
+  renderPrestadores();
+  renderHorarios();
+  renderChecklist();
+  renderOco();
+  renderGols(1);
+  renderGols(2);
+  document.getElementById('sc1a').textContent=S.placar.j1a;
+  document.getElementById('sc1b').textContent=S.placar.j1b;
+  document.getElementById('sc2a').textContent=S.placar.j2a;
+  document.getElementById('sc2b').textContent=S.placar.j2b;
+}
+
+// ── NAVEGAÇÃO ──
+function irPara(pg,btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── HEADER ──
+function atualizarHeader() {
+  const e=S.evento;
+  document.getElementById('evento-nome').textContent=e.nome;
+  document.getElementById('evento-data').textContent=e.data?new Date(e.data+'T12:00:00').toLocaleDateString('pt-BR'):'Configure o evento';
+  document.getElementById('nome-jogo1').textContent=e.j1a+' × '+e.j1b;
+  document.getElementById('nome-jogo2').textContent=e.j2a+' × '+e.j2b;
+  document.getElementById('placar-nome1').textContent=e.j1a+' × '+e.j1b;
+  document.getElementById('placar-nome2').textContent=e.j2a+' × '+e.j2b;
+  document.getElementById('pt-1a').textContent=e.j1a;
+  document.getElementById('pt-1b').textContent=e.j1b;
+  document.getElementById('pt-2a').textContent=e.j2a;
+  document.getElementById('pt-2b').textContent=e.j2b;
+}
+
+// ── MODAL EVENTO ──
+function mTab(tab){['geral','equipe','equipe2'].forEach(t=>{document.getElementById('msec-'+t).style.display=t===tab?'block':'none';document.getElementById('mtab-'+t).classList.toggle('active',t===tab);});}
+function abrirModal(){
+  const e=S.evento,n=S.nomes;
+  document.getElementById('m-nome').value=e.nome;
+  document.getElementById('m-data').value=e.data;
+  document.getElementById('m-j1a').value=e.j1a;
+  document.getElementById('m-j1b').value=e.j1b;
+  document.getElementById('m-j2a').value=e.j2a;
+  document.getElementById('m-j2b').value=e.j2b;
+  NOMES_KEYS.forEach(k=>{const el=document.getElementById('m-n-'+k);if(el)el.value=n[k]||'';});
+  mTab('geral');
+  document.getElementById('modal-evento').classList.add('open');
+}
+function fecharModal(){document.getElementById('modal-evento').classList.remove('open');}
+function salvarEvento(){
+  S.evento.nome=document.getElementById('m-nome').value||'Brave League';
+  S.evento.data=document.getElementById('m-data').value;
+  S.evento.j1a=document.getElementById('m-j1a').value||'Time A';
+  S.evento.j1b=document.getElementById('m-j1b').value||'Time B';
+  S.evento.j2a=document.getElementById('m-j2a').value||'Time A JV';
+  S.evento.j2b=document.getElementById('m-j2b').value||'Time B JV';
+  NOMES_KEYS.forEach(k=>{const el=document.getElementById('m-n-'+k);if(el)S.nomes[k]=el.value.trim();});
+  fecharModal();atualizarHeader();renderPrestadores();salvarAuto();
+}
+
+// ── PRESTADORES ──
+function renderPrestadores(){
+  const grid=document.getElementById('grid-prestadores');
+  grid.innerHTML='';
+  PRESTADORES.forEach(p=>{
+    const val=S.prestadores[p.key]||'',nome=S.nomes[p.key]||'',chegou=val!=='';
+    const div=document.createElement('div');
+    div.className='prestador-item';
+    let sub='';if(p.sub)sub+=`<span>${p.sub}</span>`;if(nome)sub+=`<span style="color:#aaa">${nome}</span>`;
+    div.innerHTML=`<div class="pst-dot ${chegou?'chegou':''}" id="pst-${p.key}"></div><div class="prestador-label">${p.label}${sub}</div><input class="prestador-input" type="time" id="pi-${p.key}" value="${val}" onchange="S.prestadores['${p.key}']=this.value;document.getElementById('pst-${p.key}').classList.toggle('chegou',this.value!='');salvarAuto()"><button class="btn-now-sm" onclick="agoraPrestador('${p.key}')">Agora</button>`;
+    grid.appendChild(div);
+  });
+}
+function agoraPrestador(key){
+  const now=new Date(),val=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  S.prestadores[key]=val;
+  const i=document.getElementById('pi-'+key);if(i)i.value=val;
+  const d=document.getElementById('pst-'+key);if(d)d.classList.add('chegou');
+  salvarAuto();
+}
+
+// ── HORÁRIOS ──
+function renderHorarios(){
+  ['j1','j2'].forEach(jogo=>{
+    const num=jogo==='j1'?'1':'2',grid=document.getElementById('grid-jogo'+num);
+    grid.innerHTML='';
+    CAMPOS.forEach(c=>{
+      const div=document.createElement('div');div.className='tempo-item';
+      div.innerHTML=`<div class="tempo-label">${c.label}</div><div class="tempo-row"><input class="tempo-input" type="time" value="${S.horarios[jogo][c.key]}" onchange="S.horarios['${jogo}']['${c.key}']=this.value;salvarAuto()"><button class="btn-now" onclick="agoraTempo('${jogo}','${c.key}')">Agora</button></div>`;
+      grid.appendChild(div);
+    });
+  });
+}
+function agoraTempo(jogo,campo){
+  const now=new Date(),val=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  S.horarios[jogo][campo]=val;
+  const idx=CAMPOS.findIndex(c=>c.key===campo),inputs=document.querySelectorAll(`#grid-jogo${jogo==='j1'?'1':'2'} .tempo-input`);
+  if(inputs[idx])inputs[idx].value=val;
+  salvarAuto();
+}
+
+// ── CHECKLIST ──
+function renderChecklist(){
+  const secs={fut:'check-fut',atl:'check-atl',mkt:'check-mkt',obs:'check-obs'};
+  Object.keys(secs).forEach(sec=>{const el=document.getElementById(secs[sec]);el.innerHTML='';CHECKLIST_ITEMS[sec].forEach(item=>el.appendChild(buildCheckItem(item)));});
+  atualizarBadgeCheck();
+}
+function buildCheckItem(item){
+  const status=S.checklist[item.id]||'',obs=S.checkObs[item.id]||'',div=document.createElement('div');
+  div.className='check-item'+(status?' status-'+status:'');div.id='ci-'+item.id;
+  div.innerHTML=`<div class="check-main"><div class="check-text">${item.texto}</div><div class="check-btns"><button class="cbtn cbtn-ok" onclick="setCheck('${item.id}','ok')">✅</button><button class="cbtn cbtn-fail" onclick="setCheck('${item.id}','fail')">❌</button></div></div><div class="check-obs-row"><textarea class="check-obs-input" rows="2" placeholder="O que aconteceu?" onchange="S.checkObs['${item.id}']=this.value;salvarAuto()">${obs}</textarea></div>`;
+  return div;
+}
+function setCheck(id,status){S.checklist[id]=S.checklist[id]===status?'':status;const el=document.getElementById('ci-'+id);el.className='check-item'+(S.checklist[id]?' status-'+S.checklist[id]:'');atualizarBadgeCheck();salvarAuto();}
+function atualizarBadgeCheck(){const total=Object.values(CHECKLIST_ITEMS).flat().length,feitos=Object.values(S.checklist).filter(v=>v==='ok').length,badge=document.getElementById('badge-check');badge.style.display=feitos<total?'flex':'none';badge.textContent=total-feitos;}
+
+// ── EDITAR CHECKLIST ──
+function abrirEditCheck(sec){_editSec=sec;document.getElementById('modal-check-titulo').textContent='Editar — '+SECOES_LABEL[sec];const lista=document.getElementById('check-edit-lista');lista.innerHTML='';CHECKLIST_ITEMS[sec].forEach((item,idx)=>lista.appendChild(buildEditRow(item.texto,idx)));document.getElementById('modal-check-edit').classList.add('open');}
+function buildEditRow(texto,idx){const row=document.createElement('div');row.className='edit-row';row.id='edit-row-'+idx;row.innerHTML=`<input type="text" value="${texto.replace(/"/g,'&quot;')}"><button class="btn-del-item" onclick="removerItemEdit(${idx})">×</button>`;return row;}
+function adicionarItemEdit(){const lista=document.getElementById('check-edit-lista');lista.appendChild(buildEditRow('',lista.children.length));}
+function removerItemEdit(idx){document.getElementById('edit-row-'+idx).remove();document.querySelectorAll('#check-edit-lista .edit-row').forEach((row,i)=>{row.id='edit-row-'+i;row.querySelector('button').setAttribute('onclick',`removerItemEdit(${i})`);});}
+function salvarEditCheck(){const pref={fut:'f',atl:'a',mkt:'m',obs:'o'};CHECKLIST_ITEMS[_editSec]=[];document.querySelectorAll('#check-edit-lista input').forEach((inp,i)=>{const txt=inp.value.trim();if(txt)CHECKLIST_ITEMS[_editSec].push({id:pref[_editSec]+(i+1)+'_'+Date.now(),texto:txt});});fecharEditCheck();renderChecklist();salvarAuto();}
+function fecharEditCheck(){document.getElementById('modal-check-edit').classList.remove('open');}
+
+// ── PLACAR ──
+function alterarPlacar(jogo,time,delta){const key=`j${jogo}${time}`;S.placar[key]=Math.max(0,S.placar[key]+delta);document.getElementById(`sc${jogo}${time}`).textContent=S.placar[key];salvarAuto();}
+
+// ── GOL ──
+function abrirModalGol(jogo){_golTimeIdx=0;const e=S.evento,times=jogo===1?[e.j1a,e.j1b]:[e.j2a,e.j2b];document.getElementById('time-selector').innerHTML=times.map((t,i)=>`<button class="time-sel-btn${i===0?' sel':''}" onclick="selTimeGol(${i})">${t}</button>`).join('');document.getElementById('gol-autor').value='';document.getElementById('gol-assist').value='';document.getElementById('gol-min').value='';document.getElementById('modal-gol').setAttribute('data-jogo',jogo);document.getElementById('modal-gol').classList.add('open');}
+function selTimeGol(idx){_golTimeIdx=idx;document.querySelectorAll('.time-sel-btn').forEach((b,i)=>b.classList.toggle('sel',i===idx));}
+function fecharModalGol(){document.getElementById('modal-gol').classList.remove('open');}
+function confirmarGol(){const jogo=parseInt(document.getElementById('modal-gol').getAttribute('data-jogo')),e=S.evento,times=jogo===1?[e.j1a,e.j1b]:[e.j2a,e.j2b],time=times[_golTimeIdx||0],autor=document.getElementById('gol-autor').value.trim(),assist=document.getElementById('gol-assist').value.trim(),min=document.getElementById('gol-min').value.trim();S.gols[`j${jogo}`].push({time,autor:autor||'?',assist,min});const tkey=_golTimeIdx===0?'a':'b';S.placar[`j${jogo}${tkey}`]++;document.getElementById(`sc${jogo}${tkey}`).textContent=S.placar[`j${jogo}${tkey}`];renderGols(jogo);fecharModalGol();salvarAuto();}
+function renderGols(jogo){const list=document.getElementById(`gols${jogo}`),gols=S.gols[`j${jogo}`];if(!gols.length){list.innerHTML='';return;}list.innerHTML=gols.map((g,i)=>{let txt=`${g.time} – ${g.autor}`;if(g.assist)txt+=` (assist: ${g.assist})`;if(g.min)txt+=` ${g.min}'`;return `<div class="gol-item"><div class="gol-dot"></div><div class="gol-txt">${txt}</div><div class="gol-del" onclick="delGol(${jogo},${i})">×</div></div>`;}).join('');}
+function delGol(jogo,idx){S.gols[`j${jogo}`].splice(idx,1);renderGols(jogo);salvarAuto();}
+
+// ── OCORRÊNCIAS ──
+let _ocoTipo='problema';
+function selTipo(tipo){
+  _ocoTipo=tipo;
+  ['problema','fisio','nota'].forEach(t=>document.getElementById('tbtn-'+t).className='tipo-btn'+(t===tipo?' sel-'+t:''));
+  document.getElementById('fisio-form').classList.toggle('show',tipo==='fisio');
+  document.getElementById('oco-texto').style.display=tipo==='fisio'?'none':'block';
+}
+function salvarOco(){
+  let texto='',extra={};
+  if(_ocoTipo==='fisio'){
+    const atleta=document.getElementById('fisio-atleta').value.trim();
+    const relato=document.getElementById('fisio-relato').value.trim();
+    const atend=document.getElementById('fisio-atendimento').value.trim();
+    if(!atleta&&!relato&&!atend)return;
+    texto=atleta?`Atleta: ${atleta}`:'Atendimento fisioterapêutico';
+    extra={atleta,relato,atendimento:atend};
+    document.getElementById('fisio-atleta').value='';
+    document.getElementById('fisio-relato').value='';
+    document.getElementById('fisio-atendimento').value='';
+  } else {
+    texto=document.getElementById('oco-texto').value.trim();
+    if(!texto)return;
+    document.getElementById('oco-texto').value='';
+  }
+  const now=new Date(),hora=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  S.ocorrencias.unshift({tipo:_ocoTipo,texto,hora,...extra});
+  renderOco();salvarAuto();
+}
+function renderOco(){
+  const list=document.getElementById('oco-list'),badge=document.getElementById('badge-oco');
+  const probs=S.ocorrencias.filter(o=>o.tipo==='problema').length;
+  badge.style.display=probs>0?'flex':'none';badge.textContent=probs;
+  if(!S.ocorrencias.length){list.innerHTML='<div style="padding:20px;text-align:center;color:#555;font-size:13px;">Nenhuma ocorrência registrada</div>';return;}
+  const lb={problema:'Problema',fisio:'Fisioterapia',nota:'Nota'};
+  list.innerHTML=S.ocorrencias.map((o,i)=>{
+    let corpo=`<div class="oco-texto">${o.texto}</div>`;
+    if(o.tipo==='fisio'){
+      if(o.relato)corpo+=`<div class="oco-texto" style="margin-top:4px;color:#aaa">📋 ${o.relato}</div>`;
+      if(o.atendimento)corpo+=`<div class="oco-texto" style="margin-top:4px;color:#aaa">🏥 ${o.atendimento}</div>`;
+    }
+    return `<div class="oco-item"><div class="oco-dot dot-${o.tipo}"></div><div class="oco-body"><div class="oco-header"><span class="oco-tipo txt-${o.tipo}">${lb[o.tipo]}</span><span class="oco-hora">${o.hora}</span></div>${corpo}</div><div class="oco-del" onclick="delOco(${i})">×</div></div>`;
+  }).join('');
+}
+function delOco(idx){S.ocorrencias.splice(idx,1);renderOco();salvarAuto();}
+
+// ── EXPORTAR ──
+function gerarTextoConteudo(){
+  const e=S.evento,h=S.horarios,p=S.placar,g=S.gols;
+  const dataFmt=e.data?new Date(e.data+'T12:00:00').toLocaleDateString('pt-BR'):'??/??/????';
+  let txt=`BRAVE LEAGUE – ${e.nome} – ${dataFmt}\n${'─'.repeat(42)}\n\nCHEGADA DOS PRESTADORES\n`;
+  PRESTADORES.forEach(pr=>{const val=S.prestadores[pr.key]||'--:--',nome=S.nomes[pr.key]?` (${S.nomes[pr.key]})`:'',cargo=pr.sub?`${pr.label} — ${pr.sub}`:pr.label;txt+=`  ${cargo}${nome}: ${val}\n`;});
+  txt+='\n';
+  [1,2].forEach(n=>{
+    const jk=`j${n}`;
+    txt+=`JOGO ${n}: ${n===1?e.j1a+' × '+e.j1b:e.j2a+' × '+e.j2b}\nPlacar: ${p[jk+'a']} × ${p[jk+'b']}\n`;
+    CAMPOS.forEach(c=>txt+=`  ${c.label}: ${h[jk][c.key]||'--:--'}\n`);
+    if(g[jk].length){txt+=`Gols:\n`;g[jk].forEach(gl=>{let l=`  • ${gl.time} – ${gl.autor}`;if(gl.assist)l+=` (assist: ${gl.assist})`;if(gl.min)l+=` ${gl.min}'`;txt+=l+'\n';});}
+    txt+='\n';
+  });
+  const ti=Object.values(CHECKLIST_ITEMS).flat(),fei=ti.filter(it=>S.checklist[it.id]==='ok'),fal=ti.filter(it=>S.checklist[it.id]==='fail'),pen=ti.filter(it=>!S.checklist[it.id]);
+  txt+=`CHECKLIST: ${fei.length}/${ti.length} concluídos\n`;
+  if(fal.length){txt+=`Não executado adequadamente:\n`;fal.forEach(it=>{txt+=`  ❌ ${it.texto}\n`;const obs=S.checkObs[it.id];if(obs)txt+=`     → ${obs}\n`;});}
+  if(pen.length){txt+=`Pendentes:\n`;pen.forEach(it=>txt+=`  • ${it.texto}\n`);}
+  const fisios=S.ocorrencias.filter(o=>o.tipo==='fisio');
+  if(fisios.length){txt+=`\nATENDIMENTOS FISIOTERAPÊUTICOS (${fisios.length}):\n`;[...fisios].reverse().forEach(o=>{txt+=`  [${o.hora}] ${o.texto}\n`;if(o.relato)txt+=`    Relato: ${o.relato}\n`;if(o.atendimento)txt+=`    Atendimento: ${o.atendimento}\n`;});}
+  const outros=S.ocorrencias.filter(o=>o.tipo!=='fisio');
+  if(outros.length){txt+=`\nOCORRÊNCIAS:\n`;[...outros].reverse().forEach(o=>{const lb={problema:'⚠️',nota:'📝'};txt+=`  ${lb[o.tipo]||'•'} [${o.hora}] ${o.texto}\n`;});}
+  return txt;
+}
+
+function gerarTexto(){_exportTxt=gerarTextoConteudo();document.getElementById('export-preview').textContent=_exportTxt;}
+
+function copiarTexto(){
+  if(!_exportTxt)_exportTxt=gerarTextoConteudo();
+  navigator.clipboard.writeText(_exportTxt).then(()=>{
+    const btn=document.querySelector('.export-btn-txt');
+    const orig=btn.innerHTML;btn.innerHTML='✅ Copiado!';
+    setTimeout(()=>btn.innerHTML=orig,2000);
+  });
+}
+
+function buildRelatorioHTML(){
+  const e=S.evento,h=S.horarios,p=S.placar,g=S.gols;
+  const dataFmt=e.data?new Date(e.data+'T12:00:00').toLocaleDateString('pt-BR'):'';
+  const ti=Object.values(CHECKLIST_ITEMS).flat();
+  const fei=ti.filter(it=>S.checklist[it.id]==='ok');
+  const fal=ti.filter(it=>S.checklist[it.id]==='fail');
+  const pen=ti.filter(it=>!S.checklist[it.id]);
+
+  function row(l,v){return `<tr><td style="padding:5px 8px;color:#555;font-size:12px;width:55%">${l}</td><td style="padding:5px 8px;font-weight:600;font-size:12px;">${v||'—'}</td></tr>`;}
+
+  let prest='';
+  PRESTADORES.forEach(pr=>{const val=S.prestadores[pr.key]||'',nome=S.nomes[pr.key]?` — ${S.nomes[pr.key]}`:'',cargo=pr.sub?`${pr.label} (${pr.sub})`:pr.label;prest+=row(cargo+nome,val||'Não registrado');});
+
+  let jogosHtml='';
+  [1,2].forEach(n=>{
+    const jk=`j${n}`,ta=n===1?e.j1a:e.j2a,tb=n===1?e.j1b:e.j2b;
+    let cols='';CAMPOS.forEach(c=>cols+=row(c.label,h[jk][c.key]));
+    let gHtml='';
+    g[jk].forEach(gl=>{let l=`${gl.time} – ${gl.autor}`;if(gl.assist)l+=` (assist: ${gl.assist})`;if(gl.min)l+=` ${gl.min}'`;gHtml+=`<li style="font-size:12px;margin-bottom:3px;">${l}</li>`;});
+    jogosHtml+=`<div style="margin-bottom:16px;">
+      <div style="background:#E55A1C;color:#fff;padding:8px 12px;border-radius:8px 8px 0 0;font-weight:700;font-size:13px;">JOGO ${n}: ${ta} × ${tb} &nbsp;|&nbsp; ${p[jk+'a']} × ${p[jk+'b']}</div>
+      <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #eee;border-top:none;border-radius:0 0 8px 8px;">${cols}</table>
+      ${gHtml?`<div style="margin-top:6px;padding:8px;background:#fff9f7;border-radius:6px;border:1px solid #fde8df;"><div style="font-size:10px;color:#E55A1C;font-weight:700;margin-bottom:4px;">GOLS</div><ul style="margin:0;padding-left:18px;">${gHtml}</ul></div>`:''}
+    </div>`;
+  });
+
+  let checkHtml=`<div style="margin-bottom:6px;font-size:12px;color:#22A45D;font-weight:600;">✅ Concluídos: ${fei.length}/${ti.length}</div>`;
+  if(fal.length){checkHtml+=`<div style="font-size:11px;font-weight:600;color:#E53935;margin:8px 0 4px;">NÃO EXECUTADO ADEQUADAMENTE</div>`;fal.forEach(it=>{checkHtml+=`<div style="font-size:12px;color:#E53935;margin-bottom:4px;padding:6px 8px;background:#fdecea;border-radius:4px;">❌ ${it.texto}`;const obs=S.checkObs[it.id];if(obs)checkHtml+=`<div style="font-size:11px;color:#888;margin-top:3px;">→ ${obs}</div>`;checkHtml+='</div>';});}
+  if(pen.length){checkHtml+=`<div style="font-size:11px;font-weight:600;color:#888;margin:8px 0 4px;">PENDENTES</div>`;pen.forEach(it=>checkHtml+=`<div style="font-size:12px;color:#888;margin-bottom:2px;">• ${it.texto}</div>`);}
+
+  const fisios=S.ocorrencias.filter(o=>o.tipo==='fisio');
+  let fisioHtml='';
+  if(fisios.length){[...fisios].reverse().forEach(o=>{fisioHtml+=`<div style="background:#EDE9FE;border-left:3px solid #7C3AED;padding:8px 10px;border-radius:4px;margin-bottom:8px;"><div style="font-size:11px;color:#7C3AED;font-weight:700;">[${o.hora}] ${o.texto}</div>${o.relato?`<div style="font-size:12px;margin-top:3px;color:#444;">Relato: ${o.relato}</div>`:''}${o.atendimento?`<div style="font-size:12px;margin-top:3px;color:#444;">Atendimento: ${o.atendimento}</div>`:''}</div>`;});}
+
+  const outros=S.ocorrencias.filter(o=>o.tipo!=='fisio');
+  let ocoHtml='';
+  if(outros.length){[...outros].reverse().forEach(o=>{const cor=o.tipo==='problema'?'#FDECEA':'#f5f5f5',brd=o.tipo==='problema'?'#E53935':'#888';ocoHtml+=`<div style="background:${cor};border-left:3px solid ${brd};padding:8px 10px;border-radius:4px;margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:${brd};">[${o.hora}]</span> <span style="font-size:12px;">${o.texto}</span></div>`;});}
+
+  return `<div style="font-family:Arial,sans-serif;background:#f8f8f8;min-height:100vh;padding:16px;">
+    <div style="max-width:680px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);">
+      <div style="background:#1A1A1A;padding:16px 20px;display:flex;align-items:center;gap:14px;">
+        <div style="background:#E55A1C;color:#fff;font-size:16px;font-weight:900;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">BL</div>
+        <div><div style="color:#fff;font-size:16px;font-weight:700;">${e.nome}</div><div style="color:#aaa;font-size:11px;margin-top:2px;">${dataFmt} · Brave Academy BH</div></div>
+      </div>
+      <div style="padding:16px 20px;">
+        <div style="font-size:10px;font-weight:700;color:#E55A1C;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E55A1C;padding-bottom:4px;margin:0 0 10px;">Chegada dos Prestadores</div>
+        <table style="width:100%;border-collapse:collapse;">${prest}</table>
+        <div style="font-size:10px;font-weight:700;color:#E55A1C;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E55A1C;padding-bottom:4px;margin:16px 0 10px;">Jogos</div>
+        ${jogosHtml}
+        <div style="font-size:10px;font-weight:700;color:#E55A1C;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E55A1C;padding-bottom:4px;margin:16px 0 10px;">Checklist Operacional</div>
+        ${checkHtml}
+        ${fisioHtml?`<div style="font-size:10px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #7C3AED;padding-bottom:4px;margin:16px 0 10px;">Atendimentos Fisioterapêuticos</div>${fisioHtml}`:''}
+        ${ocoHtml?`<div style="font-size:10px;font-weight:700;color:#E53935;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E53935;padding-bottom:4px;margin:16px 0 10px;">Ocorrências</div>${ocoHtml}`:''}
+        <div style="margin-top:20px;padding-top:12px;border-top:1px solid #eee;text-align:center;font-size:10px;color:#bbb;">Brave Academy BH · @braveacademybh</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mostrarRelatorio(){
+  const html=buildRelatorioHTML();
+  // Mostrar dentro do próprio app num overlay
+  let overlay=document.getElementById('relatorio-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='relatorio-overlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f8f8f8;';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML=`
+    <div id="rel-toolbar" style="position:sticky;top:0;z-index:10;background:#1A1A1A;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #E55A1C;">
+      <span style="color:#fff;font-size:14px;font-weight:700;">📄 Relatório</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="imprimirRelatorio()" style="background:#E55A1C;border:none;border-radius:8px;color:#fff;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">🖨️ Imprimir / PDF</button>
+        <button onclick="document.getElementById('relatorio-overlay').style.display='none'" style="background:#2d2d2d;border:1px solid #444;border-radius:8px;color:#ccc;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">✕ Fechar</button>
+      </div>
+    </div>
+    <div id="rel-conteudo">${html}</div>`;
+  overlay.style.display='block';
+}
+
+// ── TRANSFERÊNCIA DE DADOS ──
+function exportarDados(){
+  const dados = {
+    v: 1,
+    state: S,
+    checklistItems: CHECKLIST_ITEMS
+  };
+  const json = JSON.stringify(dados);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  navigator.clipboard.writeText(b64).then(()=>{
+    // Mostrar código também na tela caso clipboard falhe
+    mostrarCodigoExport(b64);
+  }).catch(()=>{
+    mostrarCodigoExport(b64);
+  });
+}
+
+function mostrarCodigoExport(b64){
+  let overlay = document.getElementById('import-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'import-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="background:#1E1E1E;border-top:2px solid #22A45D;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 34px;max-height:85vh;overflow-y:auto;">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:8px;">📤 Código do evento</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;">Código copiado! Se não colou automaticamente, selecione o texto abaixo e copie manualmente:</p>
+      <textarea readonly onclick="this.select()" style="width:100%;background:#2D2D2D;border:1px solid #444;border-radius:8px;color:#aaa;font-size:11px;padding:10px;font-family:monospace;height:100px;resize:none;">${b64}</textarea>
+      <p style="font-size:12px;color:#aaa;margin:12px 0;line-height:1.5;">
+        Agora:<br>
+        1. Abra o arquivo <strong style="color:#fff;">brave_league_v2.html</strong> no Safari<br>
+        2. Vá em <strong style="color:#fff;">Exportar → Importar dados</strong><br>
+        3. Cole o código lá
+      </p>
+      <button onclick="document.getElementById('import-overlay').style.display='none'" style="width:100%;background:#E55A1C;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:13px;cursor:pointer;">Entendido</button>
+    </div>`;
+  overlay.style.display = 'flex';
+}
+
+function abrirImportar(){
+  let overlay = document.getElementById('import-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'import-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="background:#1E1E1E;border-top:2px solid #E55A1C;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 34px;">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:8px;">📥 Importar dados</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;">Cole abaixo o código copiado do app na conversa do Claude:</p>
+      <textarea id="import-input" style="width:100%;background:#2D2D2D;border:1px solid #444;border-radius:8px;color:#fff;font-size:12px;padding:10px;font-family:monospace;height:100px;resize:none;" placeholder="Cole o código aqui..."></textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button onclick="document.getElementById('import-overlay').style.display='none'" style="flex:1;background:#2D2D2D;border:1px solid #444;border-radius:10px;color:#aaa;font-size:14px;font-weight:600;padding:12px;cursor:pointer;">Cancelar</button>
+        <button onclick="confirmarImportar()" style="flex:2;background:#E55A1C;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:12px;cursor:pointer;">Importar</button>
+      </div>
+    </div>`;
+  overlay.style.display = 'flex';
+}
+
+function confirmarImportar(){
+  const input = document.getElementById('import-input').value.trim();
+  if(!input){ alert('Cole o código primeiro.'); return; }
+  try {
+    const json = decodeURIComponent(escape(atob(input)));
+    const dados = JSON.parse(json);
+    if(!dados.v || !dados.state){ throw new Error('Formato inválido'); }
+    S = dados.state;
+    CHECKLIST_ITEMS = dados.checklistItems || JSON.parse(JSON.stringify(CHECKLIST_ITEMS_DEFAULT));
+    // Salvar como novo evento se não tiver ID
+    if(!EVENTO_ID) EVENTO_ID = 'ev_'+Date.now();
+    salvarAuto();
+    renderTudo();
+    document.getElementById('import-overlay').style.display = 'none';
+    // Feedback
+    const ind = document.getElementById('save-indicator');
+    ind.textContent = '✅ Dados importados!';
+    ind.classList.add('show');
+    setTimeout(()=>{ ind.textContent='💾 Salvo'; ind.classList.remove('show'); }, 2500);
+  } catch(err){
+    alert('Código inválido. Verifique se copiou tudo corretamente.');
+  }
+}
+
+// ── IMPRIMIR ──
+function imprimirRelatorio(){
+  window.print();
+}
+
+// ── INIT ──
+function init(){
+  // Tentar carregar o último evento aberto
+  const idx=JSON.parse(localStorage.getItem('bl_index')||'[]');
+  const ultimo=localStorage.getItem('bl_ultimo');
+  if(ultimo && idx.find(e=>e.id===ultimo)){
+    carregarEvento(ultimo);
+  } else if(idx.length){
+    carregarEvento(idx[idx.length-1].id);
+  } else {
+    renderTudo();
+  }
+}
+
+// Salvar qual evento está aberto
+function irPara(pg,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  btn.classList.add('active');
+  if(EVENTO_ID) localStorage.setItem('bl_ultimo',EVENTO_ID);
+}
+
+init();
+</script>
+</body>
+</html>
