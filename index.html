@@ -911,21 +911,34 @@ function buildRelatorioHTML(){
       </div>`;
   });
 
-  // CHECKLIST
-  let checkHtml=`<div style="font-size:12px;color:${C.verde};font-weight:700;margin-bottom:8px;">✅ Concluídos: ${fei.length}/${ti.length}</div>`;
-  if(fal.length){
-    checkHtml+=`<div style="font-size:11px;font-weight:700;color:${C.vermelho};margin:10px 0 6px;text-transform:uppercase;">Não executado adequadamente</div>`;
-    fal.forEach(it=>{
-      checkHtml+=`<div style="font-size:12px;color:${C.vermelho};margin-bottom:6px;padding:8px 10px;background:#fdecea;border-left:3px solid ${C.vermelho};border-radius:4px;">❌ ${it.texto}`;
-      const obs=S.checkObs[it.id];
-      if(obs)checkHtml+=`<div style="font-size:11px;color:${C.subtexto};margin-top:4px;">→ ${obs}</div>`;
-      checkHtml+='</div>';
+  // CHECKLIST — agrupado por seção
+  const SECOES_REL = [
+    {key:'fut', label:'Futebol / Escritório / Mesário'},
+    {key:'atl', label:'Atletas e Treinadores'},
+    {key:'mkt', label:'Marketing'},
+    {key:'obs', label:'Observações Gerais'}
+  ];
+
+  let checkHtml=`<div style="font-size:12px;color:${C.verde};font-weight:700;margin-bottom:12px;">✅ Concluídos: ${fei.length}/${ti.length}</div>`;
+
+  SECOES_REL.forEach(sec=>{
+    const items = CHECKLIST_ITEMS[sec.key];
+    if(!items || !items.length) return;
+    checkHtml+=`<div style="font-size:11px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px;">${sec.label}</div>`;
+    items.forEach(it=>{
+      const status = S.checklist[it.id] || '';
+      const obs = S.checkObs[it.id] || '';
+      if(status === 'ok'){
+        checkHtml+=`<div style="font-size:12px;color:${C.verde};margin-bottom:4px;padding:6px 10px;background:#f0faf4;border-left:3px solid ${C.verde};border-radius:4px;">✅ ${it.texto}</div>`;
+      } else if(status === 'fail'){
+        checkHtml+=`<div style="font-size:12px;color:${C.vermelho};margin-bottom:4px;padding:6px 10px;background:#fdecea;border-left:3px solid ${C.vermelho};border-radius:4px;">❌ ${it.texto}`;
+        if(obs) checkHtml+=`<div style="font-size:11px;color:${C.subtexto};margin-top:4px;">→ ${obs}</div>`;
+        checkHtml+='</div>';
+      } else {
+        checkHtml+=`<div style="font-size:12px;color:${C.label};margin-bottom:4px;padding:6px 10px;background:#f9f9f9;border-left:3px solid #ddd;border-radius:4px;">• ${it.texto}</div>`;
+      }
     });
-  }
-  if(pen.length){
-    checkHtml+=`<div style="font-size:11px;font-weight:700;color:${C.label};margin:10px 0 6px;text-transform:uppercase;">Pendentes</div>`;
-    pen.forEach(it=>checkHtml+=`<div style="font-size:12px;color:${C.subtexto};margin-bottom:4px;padding:4px 0;">• ${it.texto}</div>`);
-  }
+  });
 
   // FISIO
   const fisios=S.ocorrencias.filter(o=>o.tipo==='fisio');
