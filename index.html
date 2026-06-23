@@ -492,7 +492,7 @@ textarea.oco-input:focus{outline:none;border-color:var(--laranja);}
 
 <script>
 // ── CONSTANTES ──
-const CAMPOS=[{key:'entrada',label:'Chegada'},{key:'sorteio',label:'Sorteio/Fotos'},{key:'inicio',label:'Início'},{key:'intervalo',label:'Intervalo'},{key:'segundo',label:'2° Tempo'},{key:'fim',label:'Fim'}];
+const CAMPOS=[{key:'entrada',label:'Entrada'},{key:'sorteio',label:'Sorteio/Fotos'},{key:'inicio',label:'Início'},{key:'intervalo',label:'Intervalo'},{key:'segundo',label:'2° Tempo'},{key:'fim',label:'Fim'}];
 
 const PRESTADORES=[
   {key:'futebol',label:'Futebol',sub:''},
@@ -845,68 +845,195 @@ function buildRelatorioHTML(){
   const fal=ti.filter(it=>S.checklist[it.id]==='fail');
   const pen=ti.filter(it=>!S.checklist[it.id]);
 
-  function row(l,v){return `<tr><td style="padding:5px 8px;color:#555;font-size:12px;width:55%">${l}</td><td style="padding:5px 8px;font-weight:600;font-size:12px;">${v||'—'}</td></tr>`;}
+  // Cores explícitas — sem branco em fundo branco
+  const C = {
+    texto: '#1a1a1a',
+    subtexto: '#444444',
+    label: '#666666',
+    laranja: '#E55A1C',
+    verde: '#1a7a40',
+    vermelho: '#c0392b',
+    roxo: '#6d28d9',
+    fundo: '#f5f5f5',
+    card: '#ffffff',
+    borda: '#e0e0e0',
+    zebra: '#fafafa',
+  };
 
+  function row(l,v){
+    return `<tr>
+      <td style="padding:6px 10px;color:${C.label};font-size:12px;width:52%;border-bottom:1px solid ${C.borda};">${l}</td>
+      <td style="padding:6px 10px;font-weight:700;font-size:12px;color:${C.texto};border-bottom:1px solid ${C.borda};">${v||'—'}</td>
+    </tr>`;
+  }
+
+  // PRESTADORES
   let prest='';
-  PRESTADORES.forEach(pr=>{const val=S.prestadores[pr.key]||'',nome=S.nomes[pr.key]?` — ${S.nomes[pr.key]}`:'',cargo=pr.sub?`${pr.label} (${pr.sub})`:pr.label;prest+=row(cargo+nome,val||'Não registrado');});
+  PRESTADORES.forEach((pr,idx)=>{
+    const val=S.prestadores[pr.key]||'',nome=S.nomes[pr.key]?` — ${S.nomes[pr.key]}`:'',cargo=pr.sub?`${pr.label} (${pr.sub})`:pr.label;
+    const bg = idx%2===0 ? C.card : C.zebra;
+    prest+=`<tr style="background:${bg}">
+      <td style="padding:6px 10px;color:${C.label};font-size:12px;width:52%;border-bottom:1px solid ${C.borda};">${cargo}${nome}</td>
+      <td style="padding:6px 10px;font-weight:700;font-size:13px;color:${val?C.laranja:C.label};border-bottom:1px solid ${C.borda};">${val||'—'}</td>
+    </tr>`;
+  });
 
+  // JOGOS
   let jogosHtml='';
   [1,2].forEach(n=>{
     const jk=`j${n}`,ta=n===1?e.j1a:e.j2a,tb=n===1?e.j1b:e.j2b;
-    let cols='';CAMPOS.forEach(c=>cols+=row(c.label,h[jk][c.key]));
+    let cols='';
+    CAMPOS.forEach((c,idx)=>{
+      const bg=idx%2===0?C.card:C.zebra;
+      cols+=`<tr style="background:${bg}">
+        <td style="padding:6px 10px;color:${C.label};font-size:12px;width:52%;border-bottom:1px solid ${C.borda};">${c.label}</td>
+        <td style="padding:6px 10px;font-weight:700;font-size:13px;color:${C.texto};border-bottom:1px solid ${C.borda};">${h[jk][c.key]||'—'}</td>
+      </tr>`;
+    });
     let gHtml='';
-    g[jk].forEach(gl=>{let l=`${gl.time} – ${gl.autor}`;if(gl.assist)l+=` (assist: ${gl.assist})`;if(gl.min)l+=` ${gl.min}'`;gHtml+=`<li style="font-size:12px;margin-bottom:3px;">${l}</li>`;});
-    jogosHtml+=`<div style="margin-bottom:16px;">
-      <div style="background:#E55A1C;color:#fff;padding:8px 12px;border-radius:8px 8px 0 0;font-weight:700;font-size:13px;">JOGO ${n}: ${ta} × ${tb} &nbsp;|&nbsp; ${p[jk+'a']} × ${p[jk+'b']}</div>
-      <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #eee;border-top:none;border-radius:0 0 8px 8px;">${cols}</table>
-      ${gHtml?`<div style="margin-top:6px;padding:8px;background:#fff9f7;border-radius:6px;border:1px solid #fde8df;"><div style="font-size:10px;color:#E55A1C;font-weight:700;margin-bottom:4px;">GOLS</div><ul style="margin:0;padding-left:18px;">${gHtml}</ul></div>`:''}
-    </div>`;
+    g[jk].forEach(gl=>{
+      let l=`${gl.time} – ${gl.autor}`;
+      if(gl.assist)l+=` (assist: ${gl.assist})`;
+      if(gl.min)l+=` ${gl.min}'`;
+      gHtml+=`<li style="font-size:12px;margin-bottom:4px;color:${C.texto};">${l}</li>`;
+    });
+    jogosHtml+=`
+      <div style="margin-bottom:16px;border:1px solid ${C.borda};border-radius:8px;overflow:hidden;">
+        <div style="background:#1a1a1a;color:#E55A1C;padding:10px 14px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+          <span>JOGO ${n}: ${ta} × ${tb}</span>
+          <span style="background:#E55A1C;color:#ffffff;padding:3px 10px;border-radius:20px;font-size:13px;">${p[jk+'a']} × ${p[jk+'b']}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">${cols}</table>
+        ${gHtml?`<div style="padding:8px 12px;background:#fff9f7;border-top:1px solid #fde8df;">
+          <div style="font-size:10px;color:${C.laranja};font-weight:700;margin-bottom:6px;text-transform:uppercase;">Gols</div>
+          <ul style="margin:0;padding-left:16px;">${gHtml}</ul>
+        </div>`:''}
+      </div>`;
   });
 
-  let checkHtml=`<div style="margin-bottom:6px;font-size:12px;color:#22A45D;font-weight:600;">✅ Concluídos: ${fei.length}/${ti.length}</div>`;
-  if(fal.length){checkHtml+=`<div style="font-size:11px;font-weight:600;color:#E53935;margin:8px 0 4px;">NÃO EXECUTADO ADEQUADAMENTE</div>`;fal.forEach(it=>{checkHtml+=`<div style="font-size:12px;color:#E53935;margin-bottom:4px;padding:6px 8px;background:#fdecea;border-radius:4px;">❌ ${it.texto}`;const obs=S.checkObs[it.id];if(obs)checkHtml+=`<div style="font-size:11px;color:#888;margin-top:3px;">→ ${obs}</div>`;checkHtml+='</div>';});}
-  if(pen.length){checkHtml+=`<div style="font-size:11px;font-weight:600;color:#888;margin:8px 0 4px;">PENDENTES</div>`;pen.forEach(it=>checkHtml+=`<div style="font-size:12px;color:#888;margin-bottom:2px;">• ${it.texto}</div>`);}
+  // CHECKLIST
+  let checkHtml=`<div style="font-size:12px;color:${C.verde};font-weight:700;margin-bottom:8px;">✅ Concluídos: ${fei.length}/${ti.length}</div>`;
+  if(fal.length){
+    checkHtml+=`<div style="font-size:11px;font-weight:700;color:${C.vermelho};margin:10px 0 6px;text-transform:uppercase;">Não executado adequadamente</div>`;
+    fal.forEach(it=>{
+      checkHtml+=`<div style="font-size:12px;color:${C.vermelho};margin-bottom:6px;padding:8px 10px;background:#fdecea;border-left:3px solid ${C.vermelho};border-radius:4px;">❌ ${it.texto}`;
+      const obs=S.checkObs[it.id];
+      if(obs)checkHtml+=`<div style="font-size:11px;color:${C.subtexto};margin-top:4px;">→ ${obs}</div>`;
+      checkHtml+='</div>';
+    });
+  }
+  if(pen.length){
+    checkHtml+=`<div style="font-size:11px;font-weight:700;color:${C.label};margin:10px 0 6px;text-transform:uppercase;">Pendentes</div>`;
+    pen.forEach(it=>checkHtml+=`<div style="font-size:12px;color:${C.subtexto};margin-bottom:4px;padding:4px 0;">• ${it.texto}</div>`);
+  }
 
+  // FISIO
   const fisios=S.ocorrencias.filter(o=>o.tipo==='fisio');
   let fisioHtml='';
-  if(fisios.length){[...fisios].reverse().forEach(o=>{fisioHtml+=`<div style="background:#EDE9FE;border-left:3px solid #7C3AED;padding:8px 10px;border-radius:4px;margin-bottom:8px;"><div style="font-size:11px;color:#7C3AED;font-weight:700;">[${o.hora}] ${o.texto}</div>${o.relato?`<div style="font-size:12px;margin-top:3px;color:#444;">Relato: ${o.relato}</div>`:''}${o.atendimento?`<div style="font-size:12px;margin-top:3px;color:#444;">Atendimento: ${o.atendimento}</div>`:''}</div>`;});}
+  if(fisios.length){
+    [...fisios].reverse().forEach(o=>{
+      fisioHtml+=`<div style="background:#f5f0ff;border-left:3px solid ${C.roxo};padding:10px 12px;border-radius:4px;margin-bottom:8px;">
+        <div style="font-size:11px;color:${C.roxo};font-weight:700;margin-bottom:4px;">[${o.hora}] ${o.texto}</div>
+        ${o.relato?`<div style="font-size:12px;color:${C.subtexto};margin-top:4px;"><strong>Relato:</strong> ${o.relato}</div>`:''}
+        ${o.atendimento?`<div style="font-size:12px;color:${C.subtexto};margin-top:4px;"><strong>Atendimento:</strong> ${o.atendimento}</div>`:''}
+      </div>`;
+    });
+  }
 
+  // OCORRÊNCIAS
   const outros=S.ocorrencias.filter(o=>o.tipo!=='fisio');
   let ocoHtml='';
-  if(outros.length){[...outros].reverse().forEach(o=>{const cor=o.tipo==='problema'?'#FDECEA':'#f5f5f5',brd=o.tipo==='problema'?'#E53935':'#888';ocoHtml+=`<div style="background:${cor};border-left:3px solid ${brd};padding:8px 10px;border-radius:4px;margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:${brd};">[${o.hora}]</span> <span style="font-size:12px;">${o.texto}</span></div>`;});}
+  if(outros.length){
+    [...outros].reverse().forEach(o=>{
+      const cor=o.tipo==='problema'?'#fdecea':'#f5f5f5';
+      const brd=o.tipo==='problema'?C.vermelho:'#999';
+      const txtCor=o.tipo==='problema'?C.vermelho:'#555';
+      ocoHtml+=`<div style="background:${cor};border-left:3px solid ${brd};padding:10px 12px;border-radius:4px;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;color:${txtCor};">[${o.hora}]</span>
+        <span style="font-size:12px;color:${C.subtexto};margin-left:6px;">${o.texto}</span>
+      </div>`;
+    });
+  }
 
-  return `<div style="font-family:Arial,sans-serif;background:#f8f8f8;min-height:100vh;padding:16px;">
-    <div style="max-width:680px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);">
-      <div style="background:#1A1A1A;padding:16px 20px;display:flex;align-items:center;gap:14px;">
-        <div style="background:#E55A1C;color:#fff;font-size:16px;font-weight:900;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">BL</div>
-        <div><div style="color:#fff;font-size:16px;font-weight:700;">${e.nome}</div><div style="color:#aaa;font-size:11px;margin-top:2px;">${dataFmt} · Brave Academy BH</div></div>
-      </div>
-      <div style="padding:16px 20px;">
-        <div style="font-size:10px;font-weight:700;color:#E55A1C;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E55A1C;padding-bottom:4px;margin:0 0 10px;">Chegada dos Prestadores</div>
-        <table style="width:100%;border-collapse:collapse;">${prest}</table>
-        <div style="font-size:10px;font-weight:700;color:#E55A1C;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E55A1C;padding-bottom:4px;margin:16px 0 10px;">Jogos</div>
-        ${jogosHtml}
-        <div style="font-size:10px;font-weight:700;color:#E55A1C;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E55A1C;padding-bottom:4px;margin:16px 0 10px;">Checklist Operacional</div>
-        ${checkHtml}
-        ${fisioHtml?`<div style="font-size:10px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #7C3AED;padding-bottom:4px;margin:16px 0 10px;">Atendimentos Fisioterapêuticos</div>${fisioHtml}`:''}
-        ${ocoHtml?`<div style="font-size:10px;font-weight:700;color:#E53935;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid #E53935;padding-bottom:4px;margin:16px 0 10px;">Ocorrências</div>${ocoHtml}`:''}
-        <div style="margin-top:20px;padding-top:12px;border-top:1px solid #eee;text-align:center;font-size:10px;color:#bbb;">Brave Academy BH · @braveacademybh</div>
+  // SEÇÃO TITLE
+  function secTitle(txt, cor){
+    return `<div style="font-size:10px;font-weight:700;color:${cor||C.laranja};text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid ${cor||C.laranja};padding-bottom:4px;margin:20px 0 10px;">${txt}</div>`;
+  }
+
+  return `
+    <div style="background:#1a1a1a;padding:18px 20px;display:flex;align-items:center;gap:14px;">
+      <div style="background:#E55A1C;color:#ffffff;font-size:18px;font-weight:900;width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">BL</div>
+      <div>
+        <div style="color:#ffffff;font-size:17px;font-weight:700;">${e.nome}</div>
+        <div style="color:#E55A1C;font-size:12px;margin-top:2px;">${dataFmt} · Brave Academy BH</div>
       </div>
     </div>
-  </div>`;
+    <div style="padding:16px 20px;background:#ffffff;">
+      ${secTitle('Chegada dos Prestadores')}
+      <table style="width:100%;border-collapse:collapse;border:1px solid ${C.borda};border-radius:6px;overflow:hidden;">${prest}</table>
+      ${secTitle('Jogos')}
+      ${jogosHtml}
+      ${secTitle('Checklist Operacional')}
+      ${checkHtml}
+      ${fisios.length?secTitle('Atendimentos Fisioterapêuticos', C.roxo)+fisioHtml:''}
+      ${outros.length?secTitle('Ocorrências', C.vermelho)+ocoHtml:''}
+      <div style="margin-top:24px;padding-top:12px;border-top:1px solid ${C.borda};text-align:center;font-size:10px;color:#999;">
+        Brave Academy BH · @braveacademybh · Relatório gerado automaticamente
+      </div>
+    </div>`;
+}
+
+// ── IMPRIMIR ──
+function imprimirRelatorio(){
+  const corpo = buildRelatorioHTML();
+  const fullHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Relatorio Brave League</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;background:#f5f5f5;}
+  @media print{
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+    body{background:#f5f5f5!important;}
+    .no-print{display:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="no-print" style="background:#1a1a1a;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;">
+  <span style="color:#E55A1C;font-weight:700;font-size:14px;">Brave League — Relatório</span>
+  <button onclick="window.print()" style="background:#E55A1C;border:none;border-radius:8px;color:#fff;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;">🖨️ Imprimir / Salvar PDF</button>
+</div>
+${corpo}
+</body>
+</html>`;
+
+  // Abrir em nova aba via Blob URL
+  const blob = new Blob([fullHtml], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 function mostrarRelatorio(){
-  const html=buildRelatorioHTML();
-  // Mostrar dentro do próprio app num overlay
-  let overlay=document.getElementById('relatorio-overlay');
+  const html = buildRelatorioHTML();
+  let overlay = document.getElementById('relatorio-overlay');
   if(!overlay){
-    overlay=document.createElement('div');
-    overlay.id='relatorio-overlay';
-    overlay.style.cssText='position:fixed;inset:0;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f8f8f8;';
+    overlay = document.createElement('div');
+    overlay.id = 'relatorio-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:400;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f5f5f5;';
     document.body.appendChild(overlay);
   }
-  overlay.innerHTML=`
+  overlay.innerHTML = `
     <div id="rel-toolbar" style="position:sticky;top:0;z-index:10;background:#1A1A1A;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #E55A1C;">
       <span style="color:#fff;font-size:14px;font-weight:700;">📄 Relatório</span>
       <div style="display:flex;gap:8px;">
@@ -914,70 +1041,44 @@ function mostrarRelatorio(){
         <button onclick="document.getElementById('relatorio-overlay').style.display='none'" style="background:#2d2d2d;border:1px solid #444;border-radius:8px;color:#ccc;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">✕ Fechar</button>
       </div>
     </div>
-    <div id="rel-conteudo">${html}</div>`;
-  overlay.style.display='block';
+    <div id="rel-conteudo" style="font-family:Arial,sans-serif;">${html}</div>`;
+  overlay.style.display = 'block';
 }
 
 // ── TRANSFERÊNCIA DE DADOS ──
 function exportarDados(){
-  const dados = {
-    v: 1,
-    state: S,
-    checklistItems: CHECKLIST_ITEMS
-  };
-  const json = JSON.stringify(dados);
-  const b64 = btoa(unescape(encodeURIComponent(json)));
-  navigator.clipboard.writeText(b64).then(()=>{
-    // Mostrar código também na tela caso clipboard falhe
-    mostrarCodigoExport(b64);
-  }).catch(()=>{
-    mostrarCodigoExport(b64);
-  });
+  const dados = { v:1, state:S, checklistItems:CHECKLIST_ITEMS };
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(dados))));
+  navigator.clipboard.writeText(b64).catch(()=>{});
+  mostrarCodigoExport(b64);
 }
 
 function mostrarCodigoExport(b64){
-  let overlay = document.getElementById('import-overlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'import-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `
-    <div style="background:#1E1E1E;border-top:2px solid #22A45D;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 34px;max-height:85vh;overflow-y:auto;">
-      <h2 style="font-size:16px;font-weight:700;margin-bottom:8px;">📤 Código do evento</h2>
-      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;">Código copiado! Se não colou automaticamente, selecione o texto abaixo e copie manualmente:</p>
-      <textarea readonly onclick="this.select()" style="width:100%;background:#2D2D2D;border:1px solid #444;border-radius:8px;color:#aaa;font-size:11px;padding:10px;font-family:monospace;height:100px;resize:none;">${b64}</textarea>
-      <p style="font-size:12px;color:#aaa;margin:12px 0;line-height:1.5;">
-        Agora:<br>
-        1. Abra o arquivo <strong style="color:#fff;">brave_league_v2.html</strong> no Safari<br>
-        2. Vá em <strong style="color:#fff;">Exportar → Importar dados</strong><br>
-        3. Cole o código lá
-      </p>
-      <button onclick="document.getElementById('import-overlay').style.display='none'" style="width:100%;background:#E55A1C;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:13px;cursor:pointer;">Entendido</button>
-    </div>`;
-  overlay.style.display = 'flex';
+  let ov = document.getElementById('import-overlay');
+  if(!ov){ ov=document.createElement('div'); ov.id='import-overlay'; ov.style.cssText='position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;'; document.body.appendChild(ov); }
+  ov.innerHTML=`<div style="background:#1E1E1E;border-top:2px solid #22A45D;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 34px;max-height:85vh;overflow-y:auto;">
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:8px;color:#fff;">📤 Código do evento</h2>
+    <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;">Código copiado! Se não colou, selecione o texto abaixo e copie manualmente:</p>
+    <textarea readonly onclick="this.select()" style="width:100%;background:#2D2D2D;border:1px solid #444;border-radius:8px;color:#aaa;font-size:11px;padding:10px;font-family:monospace;height:100px;resize:none;">${b64}</textarea>
+    <p style="font-size:12px;color:#aaa;margin:12px 0;line-height:1.6;">1. Abra o link <strong style="color:#fff;">joaopucjunior.github.io/braveleague</strong><br>2. Vá em Exportar → Importar dados<br>3. Cole o código lá</p>
+    <button onclick="document.getElementById('import-overlay').style.display='none'" style="width:100%;background:#E55A1C;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:13px;cursor:pointer;">Entendido</button>
+  </div>`;
+  ov.style.display='flex';
 }
 
 function abrirImportar(){
-  let overlay = document.getElementById('import-overlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'import-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `
-    <div style="background:#1E1E1E;border-top:2px solid #E55A1C;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 34px;">
-      <h2 style="font-size:16px;font-weight:700;margin-bottom:8px;">📥 Importar dados</h2>
-      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;">Cole abaixo o código copiado do app na conversa do Claude:</p>
-      <textarea id="import-input" style="width:100%;background:#2D2D2D;border:1px solid #444;border-radius:8px;color:#fff;font-size:12px;padding:10px;font-family:monospace;height:100px;resize:none;" placeholder="Cole o código aqui..."></textarea>
-      <div style="display:flex;gap:10px;margin-top:12px;">
-        <button onclick="document.getElementById('import-overlay').style.display='none'" style="flex:1;background:#2D2D2D;border:1px solid #444;border-radius:10px;color:#aaa;font-size:14px;font-weight:600;padding:12px;cursor:pointer;">Cancelar</button>
-        <button onclick="confirmarImportar()" style="flex:2;background:#E55A1C;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:12px;cursor:pointer;">Importar</button>
-      </div>
-    </div>`;
-  overlay.style.display = 'flex';
+  let ov = document.getElementById('import-overlay');
+  if(!ov){ ov=document.createElement('div'); ov.id='import-overlay'; ov.style.cssText='position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;'; document.body.appendChild(ov); }
+  ov.innerHTML=`<div style="background:#1E1E1E;border-top:2px solid #E55A1C;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 34px;">
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:8px;color:#fff;">📥 Importar dados</h2>
+    <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;">Cole abaixo o código copiado do app:</p>
+    <textarea id="import-input" style="width:100%;background:#2D2D2D;border:1px solid #444;border-radius:8px;color:#fff;font-size:12px;padding:10px;font-family:monospace;height:100px;resize:none;" placeholder="Cole o código aqui..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <button onclick="document.getElementById('import-overlay').style.display='none'" style="flex:1;background:#2D2D2D;border:1px solid #444;border-radius:10px;color:#aaa;font-size:14px;font-weight:600;padding:12px;cursor:pointer;">Cancelar</button>
+      <button onclick="confirmarImportar()" style="flex:2;background:#E55A1C;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:12px;cursor:pointer;">Importar</button>
+    </div>
+  </div>`;
+  ov.style.display='flex';
 }
 
 function confirmarImportar(){
@@ -986,27 +1087,20 @@ function confirmarImportar(){
   try {
     const json = decodeURIComponent(escape(atob(input)));
     const dados = JSON.parse(json);
-    if(!dados.v || !dados.state){ throw new Error('Formato inválido'); }
+    if(!dados.v || !dados.state) throw new Error('inválido');
     S = dados.state;
     CHECKLIST_ITEMS = dados.checklistItems || JSON.parse(JSON.stringify(CHECKLIST_ITEMS_DEFAULT));
-    // Salvar como novo evento se não tiver ID
     if(!EVENTO_ID) EVENTO_ID = 'ev_'+Date.now();
     salvarAuto();
     renderTudo();
-    document.getElementById('import-overlay').style.display = 'none';
-    // Feedback
-    const ind = document.getElementById('save-indicator');
-    ind.textContent = '✅ Dados importados!';
+    document.getElementById('import-overlay').style.display='none';
+    const ind=document.getElementById('save-indicator');
+    ind.textContent='✅ Dados importados!';
     ind.classList.add('show');
-    setTimeout(()=>{ ind.textContent='💾 Salvo'; ind.classList.remove('show'); }, 2500);
-  } catch(err){
+    setTimeout(()=>{ ind.textContent='💾 Salvo'; ind.classList.remove('show'); },2500);
+  } catch(e){
     alert('Código inválido. Verifique se copiou tudo corretamente.');
   }
-}
-
-// ── IMPRIMIR ──
-function imprimirRelatorio(){
-  window.print();
 }
 
 // ── INIT ──
