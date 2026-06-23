@@ -62,7 +62,7 @@ html,body{height:100%;background:var(--preto);color:var(--branco);font-family:-a
 .pst-dot.chegou{background:var(--verde);}
 
 /* HORÁRIOS */
-.tempo-grid{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tempo-grid{padding:0;}
 .tempo-item{display:flex;flex-direction:column;gap:4px;}
 .tempo-label{font-size:10px;color:#888;font-weight:500;}
 .tempo-row{display:flex;gap:6px;align-items:center;}
@@ -527,7 +527,7 @@ let _editSec='', _golTimeIdx=0, _exportTxt='';
 function novoEstado() {
   return {
     evento:{nome:'Brave League',data:'',j1a:'Tigers',j1b:'Lions',j2a:'Tigers JV',j2b:'Jaguars JV'},
-    horarios:{j1:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''},j2:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''}},
+    horarios:{j1:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''},j2:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''}},planejado:{j1:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''},j2:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''}},
     prestadores:{futebol:'',mesario:'',escritorio:'',arbitragem:'',treinador_j1a:'',treinador_j1b:'',treinador_j2a:'',treinador_j2b:'',marketing:'',filmmaker:'',fisio:'',fotografo:''},
     nomes:{futebol:'',mesario:'',escritorio:'',arbitragem:'',treinador_j1a:'',treinador_j1b:'',treinador_j2a:'',treinador_j2b:'',marketing:'',filmmaker:'',fisio:'',fotografo:''},
     placar:{j1a:0,j1b:0,j2a:0,j2b:0},
@@ -684,40 +684,159 @@ function salvarEvento(){
 function renderPrestadores(){
   const grid=document.getElementById('grid-prestadores');
   grid.innerHTML='';
+
   PRESTADORES.forEach(p=>{
-    const val=S.prestadores[p.key]||'',nome=S.nomes[p.key]||'',chegou=val!=='';
+    const val=S.prestadores[p.key]||'';
+    const nome=S.nomes[p.key]||'';
+    const plan=(S.prestadoresPlan&&S.prestadoresPlan[p.key])||'';
+    const chegou=val!=='';
+    let borda='var(--cinza-brd)', cor='var(--branco)';
+    if(plan&&val){
+      const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+      const diff=toMin(val)-toMin(plan);
+      borda=diff<=0?'#22A45D':'#E53935';
+      cor=diff<=0?'#22A45D':'#E53935';
+    }
     const div=document.createElement('div');
-    div.className='prestador-item';
-    let sub='';if(p.sub)sub+=`<span>${p.sub}</span>`;if(nome)sub+=`<span style="color:#aaa">${nome}</span>`;
-    div.innerHTML=`<div class="pst-dot ${chegou?'chegou':''}" id="pst-${p.key}"></div><div class="prestador-label">${p.label}${sub}</div><input class="prestador-input" type="time" id="pi-${p.key}" value="${val}" onchange="S.prestadores['${p.key}']=this.value;document.getElementById('pst-${p.key}').classList.toggle('chegou',this.value!='');salvarAuto()"><button class="btn-now-sm" onclick="agoraPrestador('${p.key}')">Agora</button>`;
+    div.style.cssText='padding:10px 14px;border-bottom:1px solid var(--cinza-brd);';
+    let labelTxt=`<span style="font-size:13px;color:#ccc;font-weight:500;">${p.label}</span>`;
+    if(p.sub) labelTxt+=`<span style="font-size:10px;color:#666;margin-left:6px;">${p.sub}</span>`;
+    if(nome) labelTxt+=`<span style="font-size:10px;color:#aaa;margin-left:4px;">— ${nome}</span>`;
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div class="pst-dot ${chegou?'chegou':''}" id="pst-${p.key}"></div>
+        <div>${labelTxt}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:4px;">Previsto</div>
+          <input type="time" data-time24="true" id="pplan-${p.key}" value="${plan}"
+            style="width:100%;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:#888;font-size:15px;font-weight:600;padding:8px;text-align:center;font-family:'SF Mono',monospace;"
+            onchange="setPrestadorPlan('${p.key}',this.value)">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#aaa;margin-bottom:4px;">Real</div>
+          <div style="display:flex;gap:6px;">
+            <input type="time" data-time24="true" id="pi-${p.key}" value="${val}"
+              style="flex:1;min-width:0;background:var(--cinza-med);border:2px solid ${borda};border-radius:8px;color:${cor};font-size:15px;font-weight:700;padding:8px;text-align:center;font-family:'SF Mono',monospace;"
+              onchange="S.prestadores['${p.key}']=this.value;document.getElementById('pst-${p.key}').classList.toggle('chegou',this.value!='');atualizarCorPrestador('${p.key}');salvarAuto()">
+            <button class="btn-now-sm" onclick="agoraPrestador('${p.key}')">Agora</button>
+          </div>
+        </div>
+      </div>`;
     grid.appendChild(div);
   });
+}
+
+function setPrestadorPlan(key,val){
+  if(!S.prestadoresPlan) S.prestadoresPlan={};
+  S.prestadoresPlan[key]=val;
+  atualizarCorPrestador(key);
+  salvarAuto();
+}
+
+function atualizarCorPrestador(key){
+  const plan=(S.prestadoresPlan&&S.prestadoresPlan[key])||'';
+  const real=S.prestadores[key]||'';
+  const input=document.getElementById('pi-'+key);
+  if(!input) return;
+  if(plan&&real){
+    const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+    const diff=toMin(real)-toMin(plan);
+    input.style.borderColor=diff<=0?'#22A45D':'#E53935';
+    input.style.color=diff<=0?'#22A45D':'#E53935';
+  } else {
+    input.style.borderColor='var(--cinza-brd)';
+    input.style.color='var(--branco)';
+  }
 }
 function agoraPrestador(key){
   const now=new Date(),val=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   S.prestadores[key]=val;
   const i=document.getElementById('pi-'+key);if(i)i.value=val;
   const d=document.getElementById('pst-'+key);if(d)d.classList.add('chegou');
+  atualizarCorPrestador(key);
   salvarAuto();
 }
 
 // ── HORÁRIOS ──
 function renderHorarios(){
   ['j1','j2'].forEach(jogo=>{
-    const num=jogo==='j1'?'1':'2',grid=document.getElementById('grid-jogo'+num);
+    const num=jogo==='j1'?'1':'2';
+    const grid=document.getElementById('grid-jogo'+num);
     grid.innerHTML='';
+
     CAMPOS.forEach(c=>{
-      const div=document.createElement('div');div.className='tempo-item';
-      div.innerHTML=`<div class="tempo-label">${c.label}</div><div class="tempo-row"><input class="tempo-input" type="time" value="${S.horarios[jogo][c.key]}" onchange="S.horarios['${jogo}']['${c.key}']=this.value;salvarAuto()"><button class="btn-now" onclick="agoraTempo('${jogo}','${c.key}')">Agora</button></div>`;
+      const plan=(S.planejado&&S.planejado[jogo]&&S.planejado[jogo][c.key])||'';
+      const real=S.horarios[jogo][c.key]||'';
+      let borda='var(--cinza-brd)', cor='var(--branco)';
+      if(plan&&real){
+        const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+        const diff=toMin(real)-toMin(plan);
+        borda=diff<=0?'#22A45D':'#E53935';
+        cor=diff<=0?'#22A45D':'#E53935';
+      }
+      const div=document.createElement('div');
+      div.style.cssText='padding:10px 14px;border-bottom:1px solid var(--cinza-brd);';
+      div.innerHTML=`
+        <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">${c.label}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:10px;color:#666;margin-bottom:4px;">Planejado</div>
+            <input type="time" data-time24="true" id="plan-${jogo}-${c.key}" value="${plan}"
+              style="width:100%;background:var(--cinza-med);border:1px solid var(--cinza-brd);border-radius:8px;color:#888;font-size:15px;font-weight:600;padding:8px;text-align:center;font-family:'SF Mono',monospace;"
+              onchange="setPlanejado('${jogo}','${c.key}',this.value)">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#aaa;margin-bottom:4px;">Real</div>
+            <div style="display:flex;gap:6px;">
+              <input type="time" data-time24="true" id="real-${jogo}-${c.key}" value="${real}"
+                style="flex:1;min-width:0;background:var(--cinza-med);border:2px solid ${borda};border-radius:8px;color:${cor};font-size:15px;font-weight:700;padding:8px;text-align:center;font-family:'SF Mono',monospace;"
+                onchange="setReal('${jogo}','${c.key}',this.value)">
+              <button class="btn-now" onclick="agoraTempo('${jogo}','${c.key}')">Agora</button>
+            </div>
+          </div>
+        </div>`;
       grid.appendChild(div);
     });
   });
 }
+
+function setPlanejado(jogo,campo,val){
+  if(!S.planejado) S.planejado={j1:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''},j2:{entrada:'',sorteio:'',inicio:'',intervalo:'',segundo:'',fim:''}};
+  S.planejado[jogo][campo]=val;
+  atualizarCorHorario(jogo,campo);
+  salvarAuto();
+}
+
+function setReal(jogo,campo,val){
+  S.horarios[jogo][campo]=val;
+  atualizarCorHorario(jogo,campo);
+  salvarAuto();
+}
+
+function atualizarCorHorario(jogo,campo){
+  const plan=(S.planejado&&S.planejado[jogo]&&S.planejado[jogo][campo])||'';
+  const real=S.horarios[jogo][campo]||'';
+  const input=document.getElementById('real-'+jogo+'-'+campo);
+  if(!input) return;
+  if(plan && real){
+    const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+    const diff=toMin(real)-toMin(plan);
+    input.style.borderColor = diff<=0?'#22A45D':'#E53935';
+    input.style.color = diff<=0?'#22A45D':'#E53935';
+  } else {
+    input.style.borderColor='var(--cinza-brd)';
+    input.style.color='var(--branco)';
+  }
+}
+
 function agoraTempo(jogo,campo){
   const now=new Date(),val=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   S.horarios[jogo][campo]=val;
-  const idx=CAMPOS.findIndex(c=>c.key===campo),inputs=document.querySelectorAll(`#grid-jogo${jogo==='j1'?'1':'2'} .tempo-input`);
-  if(inputs[idx])inputs[idx].value=val;
+  const input=document.getElementById('real-'+jogo+'-'+campo);
+  if(input) input.value=val;
+  atualizarCorHorario(jogo,campo);
   salvarAuto();
 }
 
@@ -868,13 +987,31 @@ function buildRelatorioHTML(){
   }
 
   // PRESTADORES
-  let prest='';
+  let prest=`<tr style="background:#f0f0f0;">
+    <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};width:40%;">Prestador</td>
+    <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};text-align:center;">Previsto</td>
+    <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};text-align:center;">Real</td>
+    <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};text-align:center;">Dif.</td>
+  </tr>`;
   PRESTADORES.forEach((pr,idx)=>{
-    const val=S.prestadores[pr.key]||'',nome=S.nomes[pr.key]?` — ${S.nomes[pr.key]}`:'',cargo=pr.sub?`${pr.label} (${pr.sub})`:pr.label;
-    const bg = idx%2===0 ? C.card : C.zebra;
+    const val=S.prestadores[pr.key]||'';
+    const nome=S.nomes[pr.key]?` — ${S.nomes[pr.key]}`:'';
+    const cargo=pr.sub?`${pr.label} (${pr.sub})`:pr.label;
+    const plan=(S.prestadoresPlan&&S.prestadoresPlan[pr.key])||'';
+    const bg=idx%2===0?C.card:C.zebra;
+    let difHtml='—', difCor=C.label;
+    if(plan&&val){
+      const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+      const diff=toMin(val)-toMin(plan);
+      if(diff===0){difHtml='No horário';difCor=C.verde;}
+      else if(diff>0){difHtml='+'+diff+'min';difCor=C.vermelho;}
+      else{difHtml=diff+'min';difCor=C.verde;}
+    }
     prest+=`<tr style="background:${bg}">
-      <td style="padding:6px 10px;color:${C.label};font-size:12px;width:52%;border-bottom:1px solid ${C.borda};">${cargo}${nome}</td>
-      <td style="padding:6px 10px;font-weight:700;font-size:13px;color:${val?C.laranja:C.label};border-bottom:1px solid ${C.borda};">${val||'—'}</td>
+      <td style="padding:6px 10px;color:${C.subtexto};font-size:12px;border-bottom:1px solid ${C.borda};">${cargo}${nome}</td>
+      <td style="padding:6px 10px;font-size:12px;color:${C.label};border-bottom:1px solid ${C.borda};text-align:center;">${plan||'—'}</td>
+      <td style="padding:6px 10px;font-weight:700;font-size:12px;color:${val?C.laranja:C.label};border-bottom:1px solid ${C.borda};text-align:center;">${val||'—'}</td>
+      <td style="padding:6px 10px;font-weight:700;font-size:12px;color:${difCor};border-bottom:1px solid ${C.borda};text-align:center;">${difHtml}</td>
     </tr>`;
   });
 
@@ -883,11 +1020,30 @@ function buildRelatorioHTML(){
   [1,2].forEach(n=>{
     const jk=`j${n}`,ta=n===1?e.j1a:e.j2a,tb=n===1?e.j1b:e.j2b;
     let cols='';
+    // Cabeçalho planejado x real
+    cols+=`<tr style="background:#f0f0f0;">
+      <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};width:36%;">Etapa</td>
+      <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};text-align:center;">Planejado</td>
+      <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};text-align:center;">Real</td>
+      <td style="padding:5px 10px;color:${C.label};font-size:11px;font-weight:700;border-bottom:1px solid ${C.borda};text-align:center;">Dif.</td>
+    </tr>`;
     CAMPOS.forEach((c,idx)=>{
       const bg=idx%2===0?C.card:C.zebra;
+      const plan=(S.planejado&&S.planejado[jk]&&S.planejado[jk][c.key])||'';
+      const real=h[jk][c.key]||'';
+      let difHtml='—', difCor=C.label;
+      if(plan && real){
+        const toMin=t=>{const[hh,mm]=t.split(':').map(Number);return hh*60+mm;};
+        const diff=toMin(real)-toMin(plan);
+        if(diff===0){ difHtml='No horário'; difCor=C.verde; }
+        else if(diff>0){ difHtml='+'+diff+'min'; difCor=C.vermelho; }
+        else { difHtml=diff+'min'; difCor=C.verde; }
+      }
       cols+=`<tr style="background:${bg}">
-        <td style="padding:6px 10px;color:${C.label};font-size:12px;width:52%;border-bottom:1px solid ${C.borda};">${c.label}</td>
-        <td style="padding:6px 10px;font-weight:700;font-size:13px;color:${C.texto};border-bottom:1px solid ${C.borda};">${h[jk][c.key]||'—'}</td>
+        <td style="padding:6px 10px;color:${C.label};font-size:12px;border-bottom:1px solid ${C.borda};">${c.label}</td>
+        <td style="padding:6px 10px;font-size:12px;color:${C.subtexto};border-bottom:1px solid ${C.borda};text-align:center;">${plan||'—'}</td>
+        <td style="padding:6px 10px;font-weight:700;font-size:12px;color:${C.texto};border-bottom:1px solid ${C.borda};text-align:center;">${real||'—'}</td>
+        <td style="padding:6px 10px;font-weight:700;font-size:12px;color:${difCor};border-bottom:1px solid ${C.borda};text-align:center;">${difHtml}</td>
       </tr>`;
     });
     let gHtml='';
@@ -1008,7 +1164,10 @@ function imprimirRelatorio(){
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:Arial,sans-serif;background:#f5f5f5;}
-  @media print{
+  input[type="time"]::-webkit-datetime-edit-ampm-field { display: none; }
+input[type="time"] { -webkit-appearance: none; }
+
+@media print{
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
     body{background:#f5f5f5!important;}
     .no-print{display:none!important;}
